@@ -1,0 +1,43 @@
+{
+  "admin": {
+    "username": "usuario.e2e",
+    "password": "SenhaMock.Admin1",
+    "nome": "Usuario E2E",
+    "email": "qa.e2e@vbtech.info",
+    "perfil": "ADMINISTRADOR",
+    "roles": [
+      "ADMINISTRADOR",
+      "CONTRATO",
+      "CONTRATO_EDITAR",
+      "CONTRATO_EXPORTAR",
+      "CLIENTES",
+      "RELATORIO_FATURAMENTO",
+      "RELATORIO_TAXA_DETRAN",
+      "IMAGEM",
+      "GRAVAME",
+      "ARQUIVOS_LISTA",
+      "ARQUIVOS_IMG_LISTA",
+      "RELATORIO",
+      "ADMINISTRACAO",
+      "B3",
+      "SERVICO_CLIENTE"
+    ]
+  },
+  "invalid": {
+    "username": "usuario.invalido",
+    "password": "SenhaMock.Invalida1"
+  },
+  "twoFactor": {
+    "username": "usuario.2fa",
+    "password": "SenhaMock.2fa1",
+    "email": "qa.e2e@vbtech.info"
+  },
+  "expired": {
+    "username": "usuario.expirado",
+    "password": "SenhaMock.Expirada1"
+  },
+  "offline": {
+    "username": "usuario.offline",
+    "password": "SenhaMock.Offline1"
+  }
+}

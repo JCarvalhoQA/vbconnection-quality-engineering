@@ -1,0 +1,35 @@
+{
+  "name": "vbconnection-playwright",
+  "version": "0.1.0",
+  "private": true,
+  "description": "E2E Playwright do VB Connection (Docker local e https://newfront.vbconnection.info)",
+  "scripts": {
+    "test": "playwright test --project=vbconnection-newfront",
+    "test:newfront": "playwright test --project=vbconnection-newfront",
+    "test:docker": "playwright test --project=vbconnection-docker",
+    "test:ambos": "playwright test",
+    "test:smoke": "playwright test --project=vbconnection-newfront --grep \"@smoke\"",
+    "test:ci": "playwright test --project=vbconnection-newfront",
+    "test:ci:smoke": "playwright test --project=vbconnection-newfront --grep \"@smoke\"",
+    "report:summary": "node scripts/summarize-e2e-results.mjs",
+    "probe:hmg": "node scripts/probe-hmg.mjs",
+    "validate:pipeline": "node scripts/validate-pipeline-local.mjs",
+    "test:nova-ux": "playwright test --project=vbconnection-newfront --grep \"@novaux\"",
+    "test:login": "playwright test --project=vbconnection-newfront --grep \"@login\"",
+    "test:headed": "playwright test --project=vbconnection-newfront --grep \"@login\" --headed",
+    "test:ui": "playwright test --ui --project=vbconnection-newfront",
+    "test:contrato": "playwright test --project=vbconnection-newfront e2e/contratos",
+    "test:contrato:ba": "playwright test --project=vbconnection-newfront e2e/contratos/registro/ba.spec.ts",
+    "install:browsers": "playwright install chromium",
+    "report": "playwright show-report"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0",
+    "@types/node": "^22.13.10",
+    "dotenv": "^16.4.7",
+    "typescript": "^5.8.2"
+  }
+}

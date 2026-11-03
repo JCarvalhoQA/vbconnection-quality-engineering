@@ -1,0 +1,77 @@
+{
+  "stats": {
+    "startTime": "2026-10-28T12:00:00.000Z",
+    "duration": 120000,
+    "expected": 3,
+    "skipped": 1,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "suites": [
+    {
+      "title": "",
+      "file": "e2e/login/login.spec.ts",
+      "specs": [
+        {
+          "title": "exibe o formulário de login do newfront",
+          "ok": true,
+          "file": "e2e/login/login.spec.ts",
+          "line": 13,
+          "tests": [
+            {
+              "projectName": "vbconnection-newfront",
+              "status": "expected",
+              "results": [{ "status": "passed", "duration": 1200 }]
+            }
+          ]
+        },
+        {
+          "title": "informa usuário inválido quando a API retorna 500",
+          "ok": true,
+          "file": "e2e/login/login-recuperacao.spec.ts",
+          "line": 53,
+          "tests": [
+            {
+              "projectName": "vbconnection-newfront",
+              "status": "skipped",
+              "results": [{ "status": "skipped", "duration": 0 }]
+            }
+          ]
+        }
+      ],
+      "suites": [
+        {
+          "title": "Home",
+          "specs": [
+            {
+              "title": "VA-1732 exibe KPIs",
+              "ok": true,
+              "file": "e2e/home/home.spec.ts",
+              "line": 14,
+              "tests": [
+                {
+                  "projectName": "vbconnection-newfront",
+                  "status": "expected",
+                  "results": [{ "status": "passed", "duration": 3100 }]
+                }
+              ]
+            },
+            {
+              "title": "VA-1774 abre o formulário",
+              "ok": true,
+              "file": "e2e/home/atalho-registro-contrato.spec.ts",
+              "line": 18,
+              "tests": [
+                {
+                  "projectName": "vbconnection-newfront",
+                  "status": "expected",
+                  "results": [{ "status": "passed", "duration": 6300 }]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+{
+  "stats": {
+    "startTime": "2026-10-28T12:10:00.000Z",
+    "duration": 90000,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  },
+  "suites": [
+    {
+      "title": "",
+      "specs": [
+        {
+          "title": "autentica administrador e abre a home",
+          "ok": true,
+          "file": "e2e/login/login.spec.ts",
+          "line": 50,
+          "tests": [
+            {
+              "projectName": "vbconnection-newfront",
+              "status": "expected",
+              "results": [{ "status": "passed", "duration": 4000 }]
+            }
+          ]
+        },
+        {
+          "title": "VA-1774 abre o formulário de registro a partir da home",
+          "ok": false,
+          "file": "e2e/home/atalho-registro-contrato.spec.ts",
+          "line": 18,
+          "tests": [
+            {
+              "projectName": "vbconnection-newfront",
+              "status": "unexpected",
+              "results": [
+                {
+                  "status": "failed",
+                  "duration": 15000,
+                  "error": {
+                    "message": "TimeoutError: page.waitForURL: Timeout 15000ms exceeded.",
+                    "stack": "TimeoutError: page.waitForURL\n    at atalho-registro-contrato.spec.ts:24"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

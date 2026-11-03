@@ -146,20 +146,63 @@ Traces, screenshots and videos are kept on failure. Those folders are gitignored
 
 ## CI/CD integration
 
-`.github/workflows/playwright-tests.yml` runs in this repository only.
+`.github/workflows/playwright-tests.yml` is the only automation workflow in this repository. It does not call Jenkins and it does not deploy VBConnection. A failed run fails this workflow only. Do not add it as a required check on the application repository.
 
-- Pull requests to `main` run the `@smoke` suite against `https://newfront.vbconnection.info`.
-- `workflow_dispatch` can run `smoke` or `regression` against the published frontend or `https://hmg.vbconnection.info`.
-- The job installs dependencies, installs Chromium, typechecks, runs the target-policy unit tests, probes the allowlisted origin, then runs Playwright.
-- HTML, JUnit, JSON and the markdown summary are uploaded as artifacts.
-- Passed, failed and skipped counts are written to the job summary.
-- A failed probe or a failed test fails the workflow. The result is not converted into a success.
+There is no schedule. Manual dispatch and pull requests are the triggers.
 
-There is no schedule. The suite depends on a shared external frontend, this repository does not store a dedicated CI user, and a cron would add load without a release signal. Manual dispatch and pull requests are the triggers.
+### Run manually in GitHub Actions
 
-This workflow does not build, publish or block the VBConnection application. Do not add it as a required check on the application repository.
+GitHub shows **Run workflow** only after this file is on the default branch, `main`. The run does not wait for a deploy and it does not read another repository.
 
-The probe accepts only `newfront.vbconnection.info` and `hmg.vbconnection.info` over HTTPS, with no userinfo, query or fragment. Production and any other host are rejected.
+1. Open the repository on GitHub and select the **Actions** tab.
+2. Select **Playwright tests** in the left sidebar.
+3. Select **Run workflow**.
+4. Choose the branch that contains this workflow. Use `main` for the published suite.
+5. Choose the suite:
+   - `smoke` runs the 27 tests tagged `@smoke`.
+   - `regression` runs the full Playwright project, including the per-state contract specs. Those specs intercept `contratos/registrar` in the browser and do not persist a contract.
+6. Choose the target. The choice and the probe allow only:
+   - `https://newfront.vbconnection.info` (published frontend; use this one)
+   - `https://hmg.vbconnection.info` (institutional site today; the newfront specs time out there)
+7. Start the run. The job installs dependencies, installs Chromium, typechecks, runs the target-policy unit tests, probes the origin, then runs Playwright.
+
+Pull requests to `main` use the same workflow with `smoke` and `https://newfront.vbconnection.info`. They do not expose a free-form URL.
+
+### Secrets
+
+This workflow does not reference `secrets.*`. No GitHub Actions secret is required, and none is configured in `JCarvalhoQA/vbconnection-quality-engineering`.
+
+Login and contract calls are mocked. These optional environment variable names override the mock personas when set locally in `.env`. They are not repository secrets:
+
+- `PLAYWRIGHT_USER`
+- `PLAYWRIGHT_PASSWORD`
+- `PLAYWRIGHT_ADMIN_NAME`
+- `PLAYWRIGHT_ADMIN_EMAIL`
+- `PLAYWRIGHT_ADMIN_PERFIL`
+- `PLAYWRIGHT_USER_INVALID`
+- `PLAYWRIGHT_PASSWORD_INVALID`
+- `PLAYWRIGHT_USER_2FA`
+- `PLAYWRIGHT_PASSWORD_2FA`
+- `PLAYWRIGHT_USER_2FA_EMAIL`
+- `PLAYWRIGHT_USER_EXPIRED`
+- `PLAYWRIGHT_PASSWORD_EXPIRED`
+- `PLAYWRIGHT_USER_OFFLINE`
+- `PLAYWRIGHT_PASSWORD_OFFLINE`
+
+Do not put real passwords in the workflow file or in a commit.
+
+### Reports in Actions
+
+The job summary lists **Aprovados**, **Reprovados** and **Ignorados**, plus flaky and not-run counts. The same markdown is stored at `test-results/e2e-summary.md`.
+
+Each run uploads one artifact named `playwright-<run_id>-<suite>`, kept for 14 days:
+
+- HTML report: `playwright-report/index.html`
+- JUnit: `test-results/e2e-junit.xml`
+- JSON: `test-results/e2e-results.json`
+- Traces, screenshots and videos, only when a test fails
+
+A failed probe or a failed test leaves the workflow red. The summary and the artifact are still published. That result is not sent to the VBConnection deploy.
 
 ## Troubleshooting
 

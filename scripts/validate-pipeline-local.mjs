@@ -51,8 +51,10 @@ function expectDenied(url) {
 
 parseAllowedHmgUrl('https://newfront.vbconnection.info');
 parseAllowedHmgUrl('https://newfront.vbconnection.info/');
+parseAllowedHmgUrl('https://hmg.vbconnection.info');
+parseAllowedHmgUrl('https://hmg.vbconnection.info/');
 expectDenied('http://newfront.vbconnection.info');
-expectDenied('https://hmg.vbconnection.info');
+expectDenied('http://hmg.vbconnection.info');
 expectDenied('https://prd.vbconnection.info');
 expectDenied('https://localhost:8080');
 expectDenied('https://user:secret@newfront.vbconnection.info');

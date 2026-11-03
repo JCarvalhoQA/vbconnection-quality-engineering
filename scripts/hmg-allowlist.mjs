@@ -2,7 +2,10 @@
  * Allowlist do alvo HMG da suíte Playwright.
  * Produção, loopback e hosts fora desta lista são recusados.
  */
-export const ALLOWED_HMG_HOSTS = Object.freeze(['newfront.vbconnection.info']);
+export const ALLOWED_HMG_HOSTS = Object.freeze([
+  'newfront.vbconnection.info',
+  'hmg.vbconnection.info',
+]);
 
 export class TargetError extends Error {
   constructor(code, message) {

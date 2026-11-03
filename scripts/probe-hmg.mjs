@@ -41,7 +41,9 @@ function looksLikeLoginShell(body) {
 }
 
 async function main() {
-  const target = parseAllowedHmgUrl(process.env.PLAYWRIGHT_NEWFRONT_URL || DEFAULT_TARGET);
+  const target = parseAllowedHmgUrl(
+    process.env.PLAYWRIGHT_TARGET_URL || process.env.PLAYWRIGHT_NEWFRONT_URL || DEFAULT_TARGET,
+  );
   const origin = `${target.protocol}//${target.host}/`;
   const attempts = envInt('HMG_PROBE_ATTEMPTS', DEFAULT_ATTEMPTS);
   const delayMs = envInt('HMG_PROBE_DELAY_MS', DEFAULT_DELAY_MS);

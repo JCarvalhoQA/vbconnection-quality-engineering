@@ -1,0 +1,134 @@
+name: Playwright tests
+
+# Independent quality pipeline. It does not deploy VBConnection and it is not a
+# required check of the application repository. A failed test fails this workflow.
+
+on:
+  workflow_dispatch:
+    inputs:
+      suite:
+        description: Playwright suite
+        type: choice
+        required: true
+        default: smoke
+        options:
+          - smoke
+          - regression
+      target_url:
+        description: Allowlisted frontend URL
+        type: choice
+        required: true
+        default: https://newfront.vbconnection.info
+        options:
+          - https://newfront.vbconnection.info
+          - https://hmg.vbconnection.info
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: playwright-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  playwright:
+    name: Playwright
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      CI: true
+      SUITE: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.suite || 'smoke' }}
+      PLAYWRIGHT_TARGET_URL: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.target_url || 'https://newfront.vbconnection.info' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install chromium --with-deps
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Run target-policy unit tests
+        run: npm run test:unit
+
+      - name: Resolve allowlisted target
+        id: target
+        shell: bash
+        run: |
+          case "${PLAYWRIGHT_TARGET_URL}" in
+            https://newfront.vbconnection.info)
+              echo "project=vbconnection-newfront" >> "$GITHUB_OUTPUT"
+              echo "PLAYWRIGHT_NEWFRONT_URL=${PLAYWRIGHT_TARGET_URL}" >> "$GITHUB_ENV"
+              ;;
+            https://hmg.vbconnection.info)
+              echo "project=vbconnection-hmg" >> "$GITHUB_OUTPUT"
+              echo "PLAYWRIGHT_HMG_URL=${PLAYWRIGHT_TARGET_URL}" >> "$GITHUB_ENV"
+              ;;
+            *)
+              echo "::error::Target outside the allowlist: ${PLAYWRIGHT_TARGET_URL}"
+              exit 2
+              ;;
+          esac
+          case "${SUITE}" in
+            smoke|regression) echo "suite=${SUITE}" ;;
+            *) echo "::error::Unknown suite: ${SUITE}"; exit 2 ;;
+          esac
+
+      - name: Probe target
+        id: probe
+        run: node scripts/probe-hmg.mjs
+
+      - name: Run Playwright
+        id: e2e
+        if: steps.probe.outcome == 'success'
+        run: |
+          if [ "${SUITE}" = "smoke" ]; then
+            npx playwright test --project="${{ steps.target.outputs.project }}" --grep "@smoke"
+          else
+            npx playwright test --project="${{ steps.target.outputs.project }}"
+          fi
+
+      - name: Summarize results
+        if: always()
+        env:
+          PROBE_OUTCOME: ${{ steps.probe.outcome }}
+          E2E_OUTCOME: ${{ steps.e2e.outcome || 'skipped' }}
+        run: node scripts/summarize-e2e-results.mjs
+
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-${{ github.run_id }}-${{ env.SUITE }}
+          path: |
+            playwright-report/**
+            test-results/e2e-results.json
+            test-results/e2e-junit.xml
+            test-results/e2e-summary.md
+            test-results/**
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Fail the workflow when the probe or the suite fails
+        if: always()
+        shell: bash
+        run: |
+          echo "probe=${{ steps.probe.outcome }}"
+          echo "e2e=${{ steps.e2e.outcome || 'skipped' }}"
+          if [ "${{ steps.probe.outcome }}" != "success" ] || [ "${{ steps.e2e.outcome }}" != "success" ]; then
+            echo "::error::Playwright did not finish successfully. See the summary and the uploaded report."
+            exit 1
+          fi

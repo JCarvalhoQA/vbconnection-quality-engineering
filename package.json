@@ -1,13 +1,15 @@
 {
-  "name": "vbconnection-playwright",
+  "name": "vbconnection-quality-engineering",
   "version": "0.1.0",
   "private": true,
-  "description": "E2E Playwright do VB Connection (Docker local e https://newfront.vbconnection.info)",
+  "description": "Quality engineering and end-to-end test automation for VBConnection using Playwright and TypeScript, featuring automated regression testing, CI/CD integration, test reporting, and continuous quality assurance.",
   "scripts": {
     "test": "playwright test --project=vbconnection-newfront",
     "test:newfront": "playwright test --project=vbconnection-newfront",
     "test:docker": "playwright test --project=vbconnection-docker",
-    "test:ambos": "playwright test",
+    "test:local": "playwright test --project=vbconnection-docker",
+    "test:hmg": "playwright test --project=vbconnection-hmg",
+    "test:ambos": "playwright test --project=vbconnection-docker --project=vbconnection-newfront",
     "test:smoke": "playwright test --project=vbconnection-newfront --grep \"@smoke\"",
     "test:ci": "playwright test --project=vbconnection-newfront",
     "test:ci:smoke": "playwright test --project=vbconnection-newfront --grep \"@smoke\"",
@@ -21,7 +23,9 @@
     "test:contrato": "playwright test --project=vbconnection-newfront e2e/contratos",
     "test:contrato:ba": "playwright test --project=vbconnection-newfront e2e/contratos/registro/ba.spec.ts",
     "install:browsers": "playwright install chromium",
-    "report": "playwright show-report"
+    "report": "playwright show-report",
+    "test:unit": "playwright test --config=playwright.unit.config.ts",
+    "typecheck": "tsc --noEmit"
   },
   "engines": {
     "node": ">=20"

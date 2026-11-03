@@ -5,6 +5,8 @@ blob-report/
 playwright/.cache/
 .env
 .auth/
+storageState.json
+*.storageState.json
 
 .env.*
 !.env.example

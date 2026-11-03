@@ -1,3 +1,5 @@
+import { DEFAULT_API_URL, DEFAULT_AUTH_URL, DEFAULT_NEWFRONT_URL } from '../config/environments';
+
 export function requiredEnv(name: string): string {
   const value = process.env[name];
   if (!value) {
@@ -7,7 +9,7 @@ export function requiredEnv(name: string): string {
 }
 
 export const playwrightEnv = {
-  baseURL: process.env.PLAYWRIGHT_BASE_URL ?? 'https://newfront.vbconnection.info',
-  authURL: process.env.PLAYWRIGHT_AUTH_URL ?? 'https://hmg.vbconnection.info/vbauto.api/auth',
-  apiURL: process.env.PLAYWRIGHT_API_URL ?? 'https://hmg.vbconnection.info/vbauto.api/api',
+  baseURL: process.env.PLAYWRIGHT_BASE_URL ?? DEFAULT_NEWFRONT_URL,
+  authURL: process.env.PLAYWRIGHT_AUTH_URL ?? DEFAULT_AUTH_URL,
+  apiURL: process.env.PLAYWRIGHT_API_URL ?? DEFAULT_API_URL,
 };

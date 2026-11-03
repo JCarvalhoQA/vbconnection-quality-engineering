@@ -1,14 +1,17 @@
 import { defineConfig, devices } from '@playwright/test';
 import dotenv from 'dotenv';
 import path from 'path';
+import {
+  resolveHomologationBaseURL,
+  resolveLocalBaseURL,
+  resolveNewfrontBaseURL,
+} from './config/environments';
 
 dotenv.config({ path: path.resolve(__dirname, '.env') });
 
-const newfrontURL =
-  process.env.PLAYWRIGHT_NEWFRONT_URL ??
-  process.env.PLAYWRIGHT_BASE_URL ??
-  'https://newfront.vbconnection.info';
-const dockerURL = process.env.PLAYWRIGHT_DOCKER_URL ?? 'http://localhost:8080';
+const newfrontURL = resolveNewfrontBaseURL();
+const dockerURL = resolveLocalBaseURL();
+const homologationURL = resolveHomologationBaseURL();
 
 const chrome = {
   ...devices['Desktop Chrome'],
@@ -48,6 +51,13 @@ export default defineConfig({
       use: {
         ...chrome,
         baseURL: newfrontURL,
+      },
+    },
+    {
+      name: 'vbconnection-hmg',
+      use: {
+        ...chrome,
+        baseURL: homologationURL,
       },
     },
   ],

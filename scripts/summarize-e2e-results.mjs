@@ -233,7 +233,10 @@ function main() {
       sha: process.env.GIT_SHA || process.env.GITHUB_SHA || 'local',
       deployId: process.env.DEPLOY_ID || 'não informado',
       suite: process.env.SUITE || 'n/d',
-      target: process.env.PLAYWRIGHT_NEWFRONT_URL || 'https://newfront.vbconnection.info',
+      target:
+        process.env.PLAYWRIGHT_TARGET_URL ||
+        process.env.PLAYWRIGHT_NEWFRONT_URL ||
+        'https://newfront.vbconnection.info',
       statusLabel: statusLabel(classification),
     },
   });

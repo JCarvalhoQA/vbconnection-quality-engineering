@@ -6,9 +6,9 @@ Evolução da automação Playwright: flaky VA-1774, cobertura estrutural CE/RO,
 
 1. Causa-raiz do flaky: `click({ force: true })` no atalho da home antes do router Angular assentar.
 2. Correção: `HomePage.abrirAtalho` + shell idle; 10/10 repeats; regressão local 0 flaky.
-3. Environment `live-readonly`: secrets ok, **sem** reviewers/branch policy — proposta documentada, não aplicada.
+3. Environment `live-readonly`: secrets ok; **required reviewers** (`JCarvalhoQA`) e restrição à `main` aplicados após aprovação explícita.
 4. CE e RO estruturais independentes (mocked + live gated). BA permanece.
-5. 6 testes estruturais (3+3). Live CI pendente de aprovação de segurança.
+5. 6 testes estruturais (3+3). Live CI **não** disparada: só após revisão do PR e merge em `main`.
 6. Regressão mockada local: 82 passed, 3 skipped, 0 failed.
 7. `typecheck` ok · unitários 59 passed.
 8. Relatórios com classificação de sintoma e sanitização.
@@ -16,8 +16,8 @@ Evolução da automação Playwright: flaky VA-1774, cobertura estrutural CE/RO,
 ## Pendências de produto
 
 - Homologação **funcional** CE/RO (submit, obrigatoriedade efetiva, DETRAN): **não** feita.
-- Environment sem required reviewers: risco de disparo live por quem tem `workflow_dispatch`.
-- `main` sem branch protection.
+- Reviewer do Environment é o próprio dono; `can_admins_bypass` permanece true até haver segundo maintainer.
+- `main` sem branch protection (PR obrigatório / status checks).
 
 ## Riscos restantes
 

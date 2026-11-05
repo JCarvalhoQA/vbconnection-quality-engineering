@@ -36,4 +36,4 @@ Os +2 em relação à regressão anterior (83 contabilizados) são os estruturai
 
 ## Live-readonly nesta etapa
 
-**Não executado na CI.** Critério: só após revisão do PR e confirmação das proteções do Environment. O Environment ainda está sem reviewers e sem restrição de branch (ver `CI-SECURITY-AUDIT.md`).
+**Não executado na CI.** Critério: só após revisão do PR e confirmação das proteções do Environment. As proteções (reviewer + somente `main`) já estão ativas; o disparo continua pendente da revisão do PR #4 e do merge em `main` (ver `CI-SECURITY-AUDIT.md`).

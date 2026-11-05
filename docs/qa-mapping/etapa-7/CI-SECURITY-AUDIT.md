@@ -10,9 +10,9 @@
 | Environment | existe (`live-readonly`) |
 | Secrets (nomes) | `PLAYWRIGHT_MASTER_USER`, `PLAYWRIGHT_MASTER_PASSWORD` |
 | Secrets de repositório | nenhum |
-| Protection rules | **nenhuma** |
-| Deployment branch policy | **null** (qualquer branch do repo) |
-| Required reviewers | **não** |
+| Protection rules | **required_reviewers** + **branch_policy** |
+| Deployment branch policy | customizada: somente `main` |
+| Required reviewers | `JCarvalhoQA` (`prevent_self_review: false`) |
 | Wait timer | 0 |
 | `can_admins_bypass` | true |
 | Branch protection `main` | **não configurada** (HTTP 404) |
@@ -29,22 +29,22 @@ PRs **não** recebem os secrets Master. `ci-select.mjs` recusa live em `pull_req
 - Relatórios sanitizam Bearer, password, e-mail.
 - `persistGuard` live aborta mutações `/api/` (exceto auth).
 
-## Limitações do plano GitHub
+## Proteções aplicadas (após aprovação explícita)
 
-Ambiente pessoal. Branch protection e required reviewers de Environment dependem do plano e de permissão admin. Esta auditoria **não** tentou contornar ausência de feature.
+Aprovação: restringir à `main` e exigir reviewer antes dos secrets.
 
-## Configuração pretendida (não aplicada)
+1. **Required reviewers** no Environment `live-readonly` — reviewer `JCarvalhoQA`. O job live espera aprovação **antes** de injetar secrets.
+2. **Deployment branch policy** customizada: somente `main`. Disparos em feature branch **não** recebem o Environment.
+3. `can_admins_bypass` permanece **true** até haver segundo reviewer, para o dono não bloquear a si mesmo.
+4. `prevent_self_review` permanece **false** — repositório pessoal com um único maintainer.
+5. Master **não** está em secrets de repositório.
+6. **Não** há aprovação automática.
 
-Antes de ligar reviewers ou restringir branches, é necessária aprovação explícita.
+Efeito colateral de (2): o disparo live da Etapa 6 na feature branch deixa de usar o Environment. Live na CI só após merge em `main` **e** aprovação do reviewer.
 
-Proposta:
+## Limitações restantes
 
-1. **Required reviewers** no Environment `live-readonly` — o dono do repositório (ou um segundo maintainer). O job live espera aprovação **antes** de injetar secrets.
-2. **Deployment branch policy** customizada: somente `main` (após merge revisado). Disparos na feature branch deixam de usar o Environment.
-3. Manter `can_admins_bypass` até haver segundo reviewer, senão o dono bloqueia a si mesmo.
-4. **Não** colocar Master em secrets de repositório.
-5. **Não** aprovação automática.
-
-Efeito colateral de (2): o disparo live da Etapa 6 na feature branch deixaria de funcionar até o merge. Por isso a restrição só deve ir depois do acordo.
-
-Esta etapa **não** alterou o Environment. Live na CI **não** foi redisparada.
+- Repositório pessoal: o reviewer é o próprio dono. Não há separação de função até existir um segundo maintainer.
+- `can_admins_bypass: true` permite que um admin ignore a espera de reviewer.
+- Branch protection da `main` (PR obrigatório, status checks) **não** está disponível ou não foi configurada neste plano — HTTP 404. Não foi contornada.
+- Live **não** foi redisparada nesta etapa: o critério exige revisão do PR **e** as proteções já confirmadas. As proteções estão ativas; o disparo continua pendente da revisão do PR #4 e do merge em `main`.

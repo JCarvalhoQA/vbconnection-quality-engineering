@@ -55,9 +55,80 @@ function firstError(result) {
   const error = result?.error || (result?.errors || [])[0];
   if (!error) return { message: '', stack: '' };
   return {
-    message: String(error.message || error).split('\n')[0],
-    stack: String(error.stack || ''),
+    message: sanitizeReportText(String(error.message || error).split('\n')[0]),
+    stack: sanitizeReportText(String(error.stack || '')),
   };
+}
+
+export function sanitizeReportText(text) {
+  return String(text || '')
+    .replace(/Bearer\s+[A-Za-z0-9._\-]+/gi, 'Bearer [REDACTED]')
+    .replace(/([?&](token|access_token|password|senha)=)[^&\s]+/gi, '$1[REDACTED]')
+    .replace(
+      /"(access_token|refresh_token|token|password|senha|cookie|authorization)"\s*:\s*"[^"]*"/gi,
+      '"$1":"[REDACTED]"',
+    )
+    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, '[REDACTED_EMAIL]');
+}
+
+const UF_TOKEN = /\b(AC|AL|AP|AM|BA|CE|DF|ES|GO|MA|MG|MS|MT|PA|PB|PE|PI|PR|RJ|RN|RO|RR|RS|SC|SE|SP|TO)\b/g;
+
+export function extractUfsFromSpec(spec) {
+  const annotations = (spec.tests || [])
+    .flatMap((item) => item.annotations || [])
+    .map((item) => item.description || '')
+    .join(' ');
+  const hay = `${spec.title || ''} ${spec.file || ''} ${annotations}`;
+  return [...new Set([...hay.matchAll(UF_TOKEN)].map((match) => match[1]))];
+}
+
+export function classifyFailureKind(message = '', spec = {}) {
+  const msg = String(message || '').toLowerCase();
+  const title = String(spec.title || '').toLowerCase();
+  const hay = `${msg} ${title}`;
+  if (/skip|ignorad|gate \d live exige|piloto live-readonly exige/.test(hay)) {
+    return 'teste-ignorado-regra';
+  }
+  if (/master|autentica|401|login|password expir|duas etapas|prefs2|credentials/.test(hay)) {
+    return 'falha-autenticacao';
+  }
+  if (/net::err|econnrefused|enotfound|502|503|504|chromium|browser closed|enospc|target closed/.test(hay)) {
+    return 'falha-infraestrutura';
+  }
+  if (/hmg is not authorized|institucional|aplicação .*indispon/.test(hay)) {
+    return 'falha-ambiente';
+  }
+  if (/tohaveurl|waiting for navigation|carregando configuração|overlay|timeout \d+ms exceeded/.test(hay) && /url|navigat|home/.test(hay)) {
+    return 'falha-sincronizacao';
+  }
+  if (/strict mode violation|resolved to \d+ elements|getbyrole|locator\(|tobevisible|tohavecount/.test(hay)) {
+    return 'falha-locator';
+  }
+  if (/expect\(|tohave|toequal|tocontain|assertion/.test(hay)) {
+    return 'falha-funcional';
+  }
+  return 'falha-nao-classificada';
+}
+
+function failureKindLabel(kind) {
+  switch (kind) {
+    case 'falha-funcional':
+      return 'Falha funcional';
+    case 'falha-locator':
+      return 'Falha de locator';
+    case 'falha-autenticacao':
+      return 'Falha de autenticação';
+    case 'falha-ambiente':
+      return 'Falha de ambiente';
+    case 'falha-infraestrutura':
+      return 'Falha de infraestrutura';
+    case 'falha-sincronizacao':
+      return 'Falha de sincronização';
+    case 'teste-ignorado-regra':
+      return 'Teste ignorado por regra conhecida';
+    default:
+      return 'Falha não classificada (sintoma do teste, não veredito de produto)';
+  }
 }
 
 function percent(part, whole) {
@@ -127,6 +198,7 @@ export function summarizeReport(json) {
     passRate: percent(approved, executed),
     failures: buckets.failed.map(({ spec, test, result }) => {
       const error = firstError(result);
+      const kind = classifyFailureKind(error.message, spec);
       return {
         title: titleOf(spec),
         file: locationOf(spec),
@@ -134,8 +206,25 @@ export function summarizeReport(json) {
         durationMs: result?.duration ?? 0,
         message: error.message,
         stack: error.stack,
+        ufs: extractUfsFromSpec(spec),
+        kind,
+        kindLabel: failureKindLabel(kind),
       };
     }),
+    flakyDetails: buckets.flaky.map(({ spec, test }) => {
+      const first = (test.results || []).find((item) => item.status === 'failed' || item.status === 'timedOut');
+      const error = firstError(first);
+      const kind = classifyFailureKind(error.message, spec);
+      return {
+        title: titleOf(spec),
+        file: locationOf(spec),
+        ufs: extractUfsFromSpec(spec),
+        kind,
+        kindLabel: failureKindLabel(kind),
+        message: error.message,
+      };
+    }),
+    ufs: [...new Set(specs.flatMap((spec) => extractUfsFromSpec(spec)))].sort(),
   };
 }
 
@@ -157,9 +246,25 @@ function formatDuration(ms) {
 export function renderSummary({ metrics, meta }) {
   const failureLines = metrics.failures.length
     ? metrics.failures
-        .map((item) => `- ${item.title} — ${item.file}${item.message ? ` — ${item.message}` : ''}`)
+        .map(
+          (item) =>
+            `- **${item.kindLabel}** — ${item.title} — ${item.file}${item.ufs?.length ? ` — UF ${item.ufs.join(', ')}` : ''}${item.message ? ` — ${item.message}` : ''}`,
+        )
         .join('\n')
-    : '- Nenhuma falha funcional registrada nesta execução.';
+    : '- Nenhuma falha registrada nesta execução.';
+
+  const flakyLines = (metrics.flakyDetails || []).length
+    ? metrics.flakyDetails
+        .map(
+          (item) =>
+            `- **${item.kindLabel}** — ${item.title} — ${item.file}${item.message ? ` — 1ª falha: ${item.message}` : ''}`,
+        )
+        .join('\n')
+    : '- Nenhum teste passou apenas após retry.';
+
+  const artifact = meta.runId
+    ? `playwright-${meta.runId}-${meta.mode}-${meta.suite}`
+    : 'n/d (execução local)';
 
   return [
     '**VBConnection — Resultado da Automação**',
@@ -178,7 +283,11 @@ export function renderSummary({ metrics, meta }) {
     '',
     `Suíte: ${meta.suite}`,
     '',
+    `UF: ${metrics.ufs?.length ? metrics.ufs.join(', ') : 'n/d'}`,
+    '',
     `Alvo: ${meta.target}`,
+    '',
+    `Artifact: ${artifact}`,
     '',
     `Status geral: ${meta.statusLabel}`,
     '',
@@ -195,9 +304,15 @@ export function renderSummary({ metrics, meta }) {
     '',
     '_Taxa de aprovação = (aprovados + flaky) / (aprovados + reprovados + flaky). Ignorados e não executados ficam fora do denominador._',
     '',
+    '_A classificação das falhas descreve o **sintoma do teste** (locator, sync, auth, ambiente, infra, funcional). Não é veredito automático de defeito de produto._',
+    '',
     '### Falhas',
     '',
     failureLines,
+    '',
+    '### Flaky',
+    '',
+    flakyLines,
     '',
   ].join('\n');
 }
@@ -227,6 +342,8 @@ function main() {
         startTime: '',
         passRate: 'n/d',
         failures: [],
+        flakyDetails: [],
+        ufs: [],
       };
 
   const markdown = renderSummary({
@@ -242,6 +359,7 @@ function main() {
       deployId: process.env.DEPLOY_ID || 'não informado',
       mode: process.env.PLAYWRIGHT_MODE || 'mocked',
       suite: process.env.SUITE || 'n/d',
+      runId: process.env.GITHUB_RUN_ID || '',
       target:
         process.env.PLAYWRIGHT_TARGET_URL ||
         process.env.PLAYWRIGHT_NEWFRONT_URL ||

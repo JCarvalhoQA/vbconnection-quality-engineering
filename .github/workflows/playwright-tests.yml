@@ -95,6 +95,9 @@ jobs:
         id: select
         run: node scripts/ci-select.mjs
 
+      - name: List selected Playwright tests
+        run: npx playwright test ${{ steps.select.outputs.args }} --list
+
       - name: Install Chromium
         run: npx playwright install chromium --with-deps
 
@@ -178,6 +181,9 @@ jobs:
             echo "PLAYWRIGHT_GATE3_LIVE=1" >> "$GITHUB_ENV"
           fi
           echo "PLAYWRIGHT_PAGE02_STRUCTURAL_LIVE=1" >> "$GITHUB_ENV"
+
+      - name: List selected Playwright tests
+        run: npx playwright test ${{ steps.select.outputs.args }} --list
 
       - name: Install Chromium
         run: npx playwright install chromium --with-deps

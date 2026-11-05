@@ -69,9 +69,9 @@ const SUITE_UFS = new Set([
   'TO',
 ]);
 
-const sourceRaw = readFileSync(sourcePath);
-const fonteHash = createHash('sha256').update(sourceRaw).digest('hex').slice(0, 16);
-const source = JSON.parse(sourceRaw.toString('utf8'));
+const sourceText = readFileSync(sourcePath, 'utf8').replace(/\r\n/g, '\n');
+const fonteHash = createHash('sha256').update(sourceText, 'utf8').digest('hex').slice(0, 16);
+const source = JSON.parse(sourceText);
 mkdirSync(outDir, { recursive: true });
 
 const ufs = [...source.ufs].sort();

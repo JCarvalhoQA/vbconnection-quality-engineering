@@ -34,9 +34,9 @@ const JAVA_UFS = [
 
 test.describe('E2-04 fixtures determinísticas @mocked', () => {
   test('20 UFs Java, hash estável, sem timestamp nem PII', () => {
-    const sourceRaw = readFileSync(sourcePath);
-    const expectedHash = createHash('sha256').update(sourceRaw).digest('hex').slice(0, 16);
-    const source = JSON.parse(sourceRaw.toString('utf8'));
+    const sourceText = readFileSync(sourcePath, 'utf8').replace(/\r\n/g, '\n');
+    const expectedHash = createHash('sha256').update(sourceText, 'utf8').digest('hex').slice(0, 16);
+    const source = JSON.parse(sourceText);
     const todas = JSON.parse(readFileSync(join(fixtureDir, 'todas.json'), 'utf8'));
 
     expect(Object.keys(todas).sort()).toEqual([...JAVA_UFS]);

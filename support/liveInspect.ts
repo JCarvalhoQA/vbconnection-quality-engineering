@@ -33,6 +33,11 @@ export function masterCredentialsFromEnv(): LoginCredentials | null {
 export function requireMasterCredentials(): LoginCredentials {
   const cred = masterCredentialsFromEnv();
   if (!cred) {
+    if (process.env.CI) {
+      throw new Error(
+        'live-readonly requires PLAYWRIGHT_MASTER_USER/PASSWORD from the live-readonly GitHub Environment.',
+      );
+    }
     test.skip(true, 'PLAYWRIGHT_MASTER_USER/PASSWORD ausentes — Gate 0 bloqueado.');
     throw new Error('unreachable');
   }

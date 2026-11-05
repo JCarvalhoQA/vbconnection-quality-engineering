@@ -48,20 +48,24 @@ export class ContratoPage extends FormPage {
     await this.aguardarCarregamento();
   }
 
-  async selecionarDetran(config: DetranConfig): Promise<void> {
-    const matriz = this.matrizDaUf(config.uf);
-    await this.selectOption(this.destino, config.nomeFantasia);
+  async selecionarDestino(nomeFantasia: string): Promise<void> {
+    await this.selectOption(this.destino, nomeFantasia);
     await expect(this.page.getByText('Carregando configuração do destino…')).toHaveCount(0);
     await expect(this.page.getByRole('heading', { name: 'Agente financeiro' })).toBeVisible();
     await expect(this.page.getByRole('heading', { name: 'Veículos' })).toBeVisible();
+    await expect(this.submit).toBeVisible();
+    await hideThirdPartyOverlays(this.page);
+  }
+
+  async selecionarDetran(config: DetranConfig): Promise<void> {
+    const matriz = this.matrizDaUf(config.uf);
+    await this.selecionarDestino(config.nomeFantasia);
     if (secaoVisivel(matriz, SECAO_TERCEIRO_GARANTIDOR)) {
       const tg = this.page.getByRole('heading', { name: /terceiro garantidor/i });
       if ((await tg.count()) > 0) {
         await expect(tg.first()).toBeVisible();
       }
     }
-    await expect(this.submit).toBeVisible();
-    await hideThirdPartyOverlays(this.page);
   }
 
   async selecionarAgenteFinanceiro(label: string): Promise<void> {

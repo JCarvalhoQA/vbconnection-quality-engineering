@@ -13,6 +13,13 @@ export type RuleConfidence = 'CONFIRMADA_LIVE' | 'CONFIRMADA_JAVA' | 'CONFIRMADA
 
 export { LIVE_INVENTORY_PATH } from './repoPaths';
 
+export interface LiveTgCampo {
+  readonly label: string;
+  readonly formControl?: string | null;
+  readonly id: string | null;
+  readonly requiredVisual: boolean;
+}
+
 export interface LiveField {
   readonly secao: string;
   readonly label: string;
@@ -65,6 +72,7 @@ export interface UfUiProfile {
   readonly terceiroGarantidor: {
     readonly visivel: boolean;
     readonly campoCount: number;
+    readonly campos: readonly LiveTgCampo[];
   };
   readonly credor: boolean;
   readonly documentos: boolean;
@@ -90,6 +98,7 @@ interface RawUfInventory {
   readonly terceiroGarantidor: {
     visivel: boolean;
     campoCount: number;
+    campos?: LiveTgCampo[];
   };
   readonly credor: boolean;
   readonly documentos: boolean;
@@ -150,6 +159,7 @@ export function loadUfUiProfile(uf: string): UfUiProfile {
     terceiroGarantidor: {
       visivel: entry.terceiroGarantidor.visivel,
       campoCount: entry.terceiroGarantidor.campoCount,
+      campos: entry.terceiroGarantidor.campos ?? [],
     },
     credor: entry.credor,
     documentos: entry.documentos,

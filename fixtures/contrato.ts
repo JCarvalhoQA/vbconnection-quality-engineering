@@ -2,15 +2,34 @@ import type { DetranUf } from '../config/detransIds';
 
 export interface ContratoVeiculoData {
   readonly chassi: string;
-  readonly zeroKm: boolean;
-  readonly ano: string;
-  readonly modelo: string;
+  readonly zeroKm?: boolean;
+  readonly ano?: string;
+  readonly modelo?: string;
+  readonly indicaNovoUsado?: 'Novo' | 'Usado';
+  readonly restricao?: string;
+  readonly situacaoChassi?: string;
 }
 
 export interface ContratoDadosData {
-  readonly tipo: string;
+  readonly tipo?: string;
+  readonly tipoRestricao?: string;
   readonly numero: string;
-  readonly data: string;
+  readonly data?: string;
+  readonly valorTotal?: string;
+  readonly valorParcela?: string;
+  readonly parcelas?: string;
+  readonly liberacaoCredito?: string;
+  readonly inicioVigencia?: string;
+  readonly fimVigencia?: string;
+  readonly vencPrimeira?: string;
+  readonly vencUltima?: string;
+  readonly indice?: string;
+  readonly iof?: string;
+  readonly jurosMes?: string;
+  readonly jurosAno?: string;
+  readonly penalidade?: string;
+  readonly multa?: string;
+  readonly dataPagamento?: string;
 }
 
 export interface ContratoPessoaData {
@@ -22,6 +41,9 @@ export interface ContratoPessoaData {
   readonly bairro: string;
   readonly uf: DetranUf;
   readonly cidade: string;
+  readonly complemento?: string;
+  readonly telefone?: string;
+  readonly email?: string;
 }
 
 export interface ContratoAgenteData {

@@ -22,10 +22,14 @@
     "test:ui": "playwright test --ui --project=vbconnection-newfront",
     "test:contrato": "playwright test --project=vbconnection-newfront e2e/contratos",
     "test:contrato:ba": "playwright test --project=vbconnection-newfront e2e/contratos/registro/ba.spec.ts",
+    "test:page02:ba": "playwright test --project=vbconnection-newfront e2e/contratos/page02/ba-estrutural.spec.ts --grep \"@mocked\"",
+    "test:ci:mocked": "playwright test --project=vbconnection-newfront --grep-invert \"@live-readonly\"",
     "install:browsers": "playwright install chromium",
     "report": "playwright show-report",
     "test:unit": "playwright test --config=playwright.unit.config.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "matriz:generate": "node scripts/generate-matriz-fixtures.mjs",
+    "matriz:compare": "node scripts/compare-mock-matriz.mjs"
   },
   "engines": {
     "node": ">=20"

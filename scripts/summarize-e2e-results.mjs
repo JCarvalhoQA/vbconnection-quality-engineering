@@ -170,7 +170,11 @@ export function renderSummary({ metrics, meta }) {
     '',
     `Commit: ${meta.sha}`,
     '',
+    `Branch: ${meta.branch}`,
+    '',
     `Deploy: ${meta.deployId}`,
+    '',
+    `Modo: ${meta.mode}`,
     '',
     `Suíte: ${meta.suite}`,
     '',
@@ -229,9 +233,14 @@ function main() {
     metrics,
     meta: {
       version: process.env.APP_VERSION || 'não informada',
-      environment: 'HMG',
+      environment:
+        process.env.PLAYWRIGHT_MODE === 'live-readonly'
+          ? 'live-readonly / newfront'
+          : 'mocked / newfront SPA harness',
       sha: process.env.GIT_SHA || process.env.GITHUB_SHA || 'local',
+      branch: process.env.GITHUB_REF_NAME || process.env.GITHUB_HEAD_REF || 'local',
       deployId: process.env.DEPLOY_ID || 'não informado',
+      mode: process.env.PLAYWRIGHT_MODE || 'mocked',
       suite: process.env.SUITE || 'n/d',
       target:
         process.env.PLAYWRIGHT_TARGET_URL ||

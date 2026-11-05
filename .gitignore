@@ -11,3 +11,8 @@ storageState.json
 .env.*
 !.env.example
 !.env.sample
+
+# Live inspection dumps may retain DOM residue. Keep only the folder contract.
+docs/qa-mapping/evidence/live/*
+!docs/qa-mapping/evidence/live/.gitignore
+!docs/qa-mapping/evidence/live/README.md

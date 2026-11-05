@@ -23,22 +23,28 @@ The layout follows the suite that already existed. Specs stay under `e2e/` so th
 
 ```text
 ├── .github/workflows/playwright-tests.yml
-├── actions/                  contract actions
-├── config/                   DETRAN rules and environment URLs
+├── actions/
+├── config/
+├── docs/qa-mapping/          UF inventories, Gates 0–3, Etapa 6
 ├── e2e/
 │   ├── acessibilidade/
 │   ├── cadastros/
-│   ├── contratos/            consult and per-UF registration
+│   ├── contratos/
+│   │   ├── registro/         mocked registration by UF
+│   │   └── page02/           structural PAGE-02 (BA pilot)
+│   ├── gate0/ … gate3/       live-readonly inspection (gated)
 │   ├── home/
 │   ├── login/
 │   ├── navegacao/
 │   └── telas-padrao/
 ├── factories/
-├── fixtures/                 mock personas and DETRAN data
-├── pages/                    page objects
-├── scripts/                  probe, summary and local pipeline checks
-├── support/                  auth, navigation and API mocks
-├── tests/                    target-policy unit tests (no browser)
+├── fixtures/
+│   └── matriz/               20 Java-matrix UF fixtures (+ CE/RO off-suite)
+├── pages/
+│   └── fragments/            VeiculoSection
+├── scripts/
+├── support/                  matrizLoader, ufUiProfile, persistGuard
+├── tests/
 ├── utils/
 ├── playwright.config.ts
 ├── playwright.unit.config.ts
@@ -112,12 +118,19 @@ Other entry points:
 npm run test:smoke
 npm run test:login
 npm run test:contrato
+npm run test:page02:ba
 npm run test:ui
 npm run test:unit
 npm run typecheck
+npm run matriz:generate
+npm run matriz:compare
 ```
 
-`test:unit` checks URL allowlisting in process. It does not open a browser and it does not call VBConnection.
+`test:unit` is process-level (allowlist, matriz, persistGuard, UF UI profile). It does not open a browser and it does not call VBConnection.
+
+`test:page02:ba` is the Bahia PAGE-02 structural spec in `@mocked` mode. It never clicks Registrar.
+
+Live-readonly specs (`@live-readonly`) stay skipped unless `PLAYWRIGHT_PAGE02_STRUCTURAL_LIVE=1` (or the Gate flags) and Master credentials are set. They never run on pull requests.
 
 ## Running tests by module or state
 
@@ -129,7 +142,9 @@ npx playwright test --project=vbconnection-newfront --grep @sp
 npx playwright test --project=vbconnection-hmg --grep @ba
 ```
 
-Registration specs exist for AC, AP, BA, DF, ES, MG, MS, MT, PB, PE, PR, RJ, RN, RR, RS, SC, SE, SP and TO. Each state runs two scenarios: required fields, then a successful mocked registration. Grep tags use the lower-case UF (`@ba`, `@sp`).
+Registration specs exist for AC, AP, BA, DF, ES, MG, MS, MT, PB, PE, PR, RJ, RN, RR, RS, SC, SE, SP and TO. Each in-suite state runs two mocked scenarios: required fields, then a successful intercepted registration (`contratos/registrar` is mocked; `persistGuard` blocks other writes). SE is skipped (`formularioIndisponivel`). CE, RO and MA stay out of the registration suite.
+
+Grep tags use the lower-case UF (`@ba`, `@sp`). Structural PAGE-02 uses `@page02`. Live inspections use `@live-readonly`.
 
 Replace the project name with `vbconnection-docker` or `vbconnection-hmg` to point the same spec at another environment.
 
@@ -150,29 +165,42 @@ Traces, screenshots and videos are kept on failure. Those folders are gitignored
 
 There is no schedule. Manual dispatch and pull requests are the triggers.
 
+### Modes
+
+| Mode | Who can run it | What it does |
+| --- | --- | --- |
+| `mocked` | Pull requests (default) and manual dispatch (default) | Typecheck, deterministic matriz fixtures, mock × Java compare, unit tests, then E2E with mocked auth/API. No Master secrets. `persistGuard` in mocked mode. `@live-readonly` specs are inverted out. |
+| `live-readonly` | Manual dispatch only, GitHub Environment `live-readonly` | Real Master login. Only `@live-readonly` specs. `persistGuard` aborts business POST/PUT/PATCH/DELETE. No Registrar, Salvar, upload or mocked auth. |
+
+Suites: `smoke` (`@smoke`), `regression` (full mocked E2E or all live-readonly specs), `structural` (PAGE-02 BA). Target `newfront` is the only authorized SPA. `hmg` is rejected (institutional site).
+
+Pull requests always force `mocked` + `regression` + `newfront`. They never receive Master credentials.
+
 ### Run manually in GitHub Actions
 
-GitHub shows **Run workflow** only after this file is on the default branch, `main`. The run does not wait for a deploy and it does not read another repository.
+GitHub shows **Run workflow** for a workflow file that already exists on the default branch. After this change lands on `main`:
 
 1. Open the repository on GitHub and select the **Actions** tab.
-2. Select **Playwright tests** in the left sidebar.
+2. Select **Playwright tests**.
 3. Select **Run workflow**.
-4. Choose the branch that contains this workflow. Use `main` for the published suite.
-5. Choose the suite:
-   - `smoke` runs the 27 tests tagged `@smoke`.
-   - `regression` runs the full Playwright project, including the per-state contract specs. Those specs intercept `contratos/registrar` in the browser and do not persist a contract.
-6. Choose the target. The choice and the probe allow only:
-   - `https://newfront.vbconnection.info` (published frontend; use this one)
-   - `https://hmg.vbconnection.info` (institutional site today; the newfront specs time out there)
-7. Start the run. The job installs dependencies, installs Chromium, typechecks, runs the target-policy unit tests, probes the origin, then runs Playwright.
+4. Choose the branch. Use `main` for the published suite.
+5. Choose `mode` (`mocked` or `live-readonly`), `suite` and `target`.
+6. Start the run.
 
-Pull requests to `main` use the same workflow with `smoke` and `https://newfront.vbconnection.info`. They do not expose a free-form URL.
+Until the updated workflow is on `main`, a manual run from `main` still uses the previous file. Use the working branch in **Run workflow** to exercise this version, or merge the pull request first.
 
 ### Secrets
 
-This workflow does not reference `secrets.*`. No GitHub Actions secret is required, and none is configured in `JCarvalhoQA/vbconnection-quality-engineering`.
+`mocked` does not read `secrets.*`.
 
-Login and contract calls are mocked. These optional environment variable names override the mock personas when set locally in `.env`. They are not repository secrets:
+`live-readonly` reads only from the GitHub Environment `live-readonly`:
+
+- `PLAYWRIGHT_MASTER_USER`
+- `PLAYWRIGHT_MASTER_PASSWORD`
+
+Configure the environment with required reviewers before treating manual live runs as operational. Do not attach those secrets to the pull-request job.
+
+Login and contract calls in `mocked` mode use intercepts. These optional names override the mock personas in local `.env` only:
 
 - `PLAYWRIGHT_USER`
 - `PLAYWRIGHT_PASSWORD`

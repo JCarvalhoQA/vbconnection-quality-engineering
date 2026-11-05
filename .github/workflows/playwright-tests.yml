@@ -1,11 +1,19 @@
 name: Playwright tests
 
 # Independent quality pipeline. It does not deploy VBConnection and it is not a
-# required check of the application repository. A failed test fails this workflow.
+# required check of the application repository.
 
 on:
   workflow_dispatch:
     inputs:
+      mode:
+        description: Execution mode
+        type: choice
+        required: true
+        default: mocked
+        options:
+          - mocked
+          - live-readonly
       suite:
         description: Playwright suite
         type: choice
@@ -14,14 +22,15 @@ on:
         options:
           - smoke
           - regression
-      target_url:
-        description: Allowlisted frontend URL
+          - structural
+      target:
+        description: Frontend target
         type: choice
         required: true
-        default: https://newfront.vbconnection.info
+        default: newfront
         options:
-          - https://newfront.vbconnection.info
-          - https://hmg.vbconnection.info
+          - newfront
+          - hmg
   pull_request:
     branches:
       - main
@@ -30,18 +39,27 @@ permissions:
   contents: read
 
 concurrency:
-  group: playwright-${{ github.workflow }}-${{ github.ref }}
+  group: playwright-${{ github.workflow }}-${{ github.ref }}-${{ github.event_name == 'workflow_dispatch' && inputs.mode || 'mocked' }}
   cancel-in-progress: true
 
+env:
+  CI: true
+  PLAYWRIGHT_MODE: ${{ github.event_name == 'workflow_dispatch' && inputs.mode || 'mocked' }}
+  SUITE: ${{ github.event_name == 'workflow_dispatch' && inputs.suite || 'regression' }}
+  PLAYWRIGHT_TARGET: ${{ github.event_name == 'workflow_dispatch' && inputs.target || 'newfront' }}
+  PLAYWRIGHT_NEWFRONT_URL: https://newfront.vbconnection.info
+  PLAYWRIGHT_GATE0_LIVE: '0'
+  PLAYWRIGHT_GATE1_LIVE: '0'
+  PLAYWRIGHT_GATE2_LIVE: '0'
+  PLAYWRIGHT_GATE3_LIVE: '0'
+  PLAYWRIGHT_PAGE02_STRUCTURAL_LIVE: '0'
+
 jobs:
-  playwright:
-    name: Playwright
+  mocked:
+    name: Mocked
+    if: github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && inputs.mode != 'live-readonly')
     runs-on: ubuntu-latest
-    timeout-minutes: 45
-    env:
-      CI: true
-      SUITE: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.suite || 'smoke' }}
-      PLAYWRIGHT_TARGET_URL: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.target_url || 'https://newfront.vbconnection.info' }}
+    timeout-minutes: 60
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -55,80 +73,151 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Chromium
-        run: npx playwright install chromium --with-deps
-
       - name: Typecheck
         run: npm run typecheck
 
-      - name: Run target-policy unit tests
+      - name: Generate matriz fixtures and assert determinism
+        run: |
+          npm run matriz:generate
+          if [ -n "$(git status --porcelain -- fixtures/matriz)" ]; then
+            git --no-pager diff -- fixtures/matriz || true
+            echo "::error::matriz:generate changed versioned fixtures (not deterministic)."
+            exit 1
+          fi
+
+      - name: Compare mock × Java matriz
+        run: npm run matriz:compare
+
+      - name: Unit tests
         run: npm run test:unit
 
-      - name: Resolve allowlisted target
-        id: target
-        shell: bash
-        run: |
-          case "${PLAYWRIGHT_TARGET_URL}" in
-            https://newfront.vbconnection.info)
-              echo "project=vbconnection-newfront" >> "$GITHUB_OUTPUT"
-              echo "PLAYWRIGHT_NEWFRONT_URL=${PLAYWRIGHT_TARGET_URL}" >> "$GITHUB_ENV"
-              ;;
-            https://hmg.vbconnection.info)
-              echo "project=vbconnection-hmg" >> "$GITHUB_OUTPUT"
-              echo "PLAYWRIGHT_HMG_URL=${PLAYWRIGHT_TARGET_URL}" >> "$GITHUB_ENV"
-              ;;
-            *)
-              echo "::error::Target outside the allowlist: ${PLAYWRIGHT_TARGET_URL}"
-              exit 2
-              ;;
-          esac
-          case "${SUITE}" in
-            smoke|regression) echo "suite=${SUITE}" ;;
-            *) echo "::error::Unknown suite: ${SUITE}"; exit 2 ;;
-          esac
+      - name: Validate suite selection
+        id: select
+        run: node scripts/ci-select.mjs
 
-      - name: Probe target
-        id: probe
-        run: node scripts/probe-hmg.mjs
+      - name: Install Chromium
+        run: npx playwright install chromium --with-deps
 
-      - name: Run Playwright
+      - name: Run mocked Playwright suite
         id: e2e
-        if: steps.probe.outcome == 'success'
-        run: |
-          if [ "${SUITE}" = "smoke" ]; then
-            npx playwright test --project="${{ steps.target.outputs.project }}" --grep "@smoke"
-          else
-            npx playwright test --project="${{ steps.target.outputs.project }}"
-          fi
+        run: npx playwright test ${{ steps.select.outputs.args }}
 
       - name: Summarize results
         if: always()
         env:
-          PROBE_OUTCOME: ${{ steps.probe.outcome }}
+          PROBE_OUTCOME: success
           E2E_OUTCOME: ${{ steps.e2e.outcome || 'skipped' }}
+          GIT_SHA: ${{ github.sha }}
+          APP_VERSION: ${{ github.ref_name }}
+          DEPLOY_ID: independent-qe
         run: node scripts/summarize-e2e-results.mjs
 
       - name: Upload reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-${{ github.run_id }}-${{ env.SUITE }}
+          name: playwright-${{ github.run_id }}-mocked-${{ env.SUITE }}
           path: |
             playwright-report/**
             test-results/e2e-results.json
             test-results/e2e-junit.xml
             test-results/e2e-summary.md
-            test-results/**
+            test-results/**/trace.zip
+            test-results/**/*.png
+            test-results/**/error-context.md
           if-no-files-found: warn
           retention-days: 14
 
-      - name: Fail the workflow when the probe or the suite fails
+      - name: Fail the workflow when the suite fails
         if: always()
         shell: bash
         run: |
-          echo "probe=${{ steps.probe.outcome }}"
           echo "e2e=${{ steps.e2e.outcome || 'skipped' }}"
-          if [ "${{ steps.probe.outcome }}" != "success" ] || [ "${{ steps.e2e.outcome }}" != "success" ]; then
-            echo "::error::Playwright did not finish successfully. See the summary and the uploaded report."
+          if [ "${{ steps.e2e.outcome }}" != "success" ]; then
+            echo "::error::Mocked Playwright did not finish successfully. See the summary and the uploaded report."
+            exit 1
+          fi
+
+  live-readonly:
+    name: Live readonly
+    if: github.event_name == 'workflow_dispatch' && inputs.mode == 'live-readonly'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    environment: live-readonly
+    env:
+      PLAYWRIGHT_MASTER_USER: ${{ secrets.PLAYWRIGHT_MASTER_USER }}
+      PLAYWRIGHT_MASTER_PASSWORD: ${{ secrets.PLAYWRIGHT_MASTER_PASSWORD }}
+      PLAYWRIGHT_MASTER_PERFIL: MASTER
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Validate suite selection
+        id: select
+        run: node scripts/ci-select.mjs
+
+      - name: Enable live-readonly flags
+        shell: bash
+        run: |
+          if [ "${SUITE}" = "regression" ]; then
+            echo "PLAYWRIGHT_GATE0_LIVE=1" >> "$GITHUB_ENV"
+            echo "PLAYWRIGHT_GATE1_LIVE=1" >> "$GITHUB_ENV"
+            echo "PLAYWRIGHT_GATE2_LIVE=1" >> "$GITHUB_ENV"
+            echo "PLAYWRIGHT_GATE3_LIVE=1" >> "$GITHUB_ENV"
+          fi
+          echo "PLAYWRIGHT_PAGE02_STRUCTURAL_LIVE=1" >> "$GITHUB_ENV"
+
+      - name: Install Chromium
+        run: npx playwright install chromium --with-deps
+
+      - name: Run live-readonly Playwright suite
+        id: e2e
+        run: npx playwright test ${{ steps.select.outputs.args }}
+
+      - name: Summarize results
+        if: always()
+        env:
+          PROBE_OUTCOME: success
+          E2E_OUTCOME: ${{ steps.e2e.outcome || 'skipped' }}
+          GIT_SHA: ${{ github.sha }}
+          APP_VERSION: ${{ github.ref_name }}
+          DEPLOY_ID: independent-qe
+        run: node scripts/summarize-e2e-results.mjs
+
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-${{ github.run_id }}-live-readonly-${{ env.SUITE }}
+          path: |
+            playwright-report/**
+            test-results/e2e-results.json
+            test-results/e2e-junit.xml
+            test-results/e2e-summary.md
+            test-results/**/trace.zip
+            test-results/**/*.png
+            test-results/**/error-context.md
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Fail the workflow when the suite fails
+        if: always()
+        shell: bash
+        run: |
+          echo "e2e=${{ steps.e2e.outcome || 'skipped' }}"
+          if [ "${{ steps.e2e.outcome }}" != "success" ]; then
+            echo "::error::Live-readonly Playwright did not finish successfully. See the summary and the uploaded report."
             exit 1
           fi

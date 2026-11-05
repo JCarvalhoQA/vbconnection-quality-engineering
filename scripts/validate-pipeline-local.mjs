@@ -96,4 +96,38 @@ const unavailable = runSummary({
 assert.match(unavailable.markdown, /aplicação HMG indisponível/);
 assert.match(unavailable.output, /classification=aplicacao-indisponivel/);
 
-console.log('validate-pipeline-local: 4 canários locais aprovados');
+function runSelect(env) {
+  return spawnSync(process.execPath, [path.join(root, 'ci-select.mjs')], {
+    encoding: 'utf8',
+    env: { ...process.env, ...env },
+  });
+}
+
+const prLive = runSelect({
+  PLAYWRIGHT_MODE: 'live-readonly',
+  GITHUB_EVENT_NAME: 'pull_request',
+  SUITE: 'smoke',
+  PLAYWRIGHT_TARGET: 'newfront',
+  PLAYWRIGHT_MASTER_USER: '',
+  PLAYWRIGHT_MASTER_PASSWORD: '',
+});
+assert.equal(prLive.status, 2, prLive.stderr || prLive.stdout);
+
+const hmg = runSelect({
+  PLAYWRIGHT_MODE: 'mocked',
+  GITHUB_EVENT_NAME: 'workflow_dispatch',
+  SUITE: 'smoke',
+  PLAYWRIGHT_TARGET: 'hmg',
+});
+assert.equal(hmg.status, 2, hmg.stderr || hmg.stdout);
+
+const mockedOk = runSelect({
+  PLAYWRIGHT_MODE: 'mocked',
+  GITHUB_EVENT_NAME: 'pull_request',
+  SUITE: 'regression',
+  PLAYWRIGHT_TARGET: 'newfront',
+});
+assert.equal(mockedOk.status, 0, mockedOk.stderr || mockedOk.stdout);
+assert.match(mockedOk.stdout, /grep-invert @live-readonly/);
+
+console.log('validate-pipeline-local: canários locais aprovados');

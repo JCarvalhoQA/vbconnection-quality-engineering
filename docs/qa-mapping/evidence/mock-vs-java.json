@@ -1,0 +1,66 @@
+{
+  "geradoEm": "2026-11-05T17:13:13.540Z",
+  "fonteMock": "auto.ui/playwright/fixtures/matriz/{UF}.json",
+  "fonteJava": "docs/qa-mapping/evidence/matriz-form.json",
+  "overlap": [
+    "AC",
+    "AP",
+    "BA",
+    "CE",
+    "DF",
+    "ES",
+    "MG",
+    "MS",
+    "MT",
+    "PB",
+    "PE",
+    "PR",
+    "RJ",
+    "RN",
+    "RO",
+    "RR",
+    "RS",
+    "SC",
+    "SP",
+    "TO"
+  ],
+  "suiteUfs": [
+    "AC",
+    "AP",
+    "BA",
+    "DF",
+    "ES",
+    "MG",
+    "MS",
+    "MT",
+    "PB",
+    "PE",
+    "PR",
+    "RJ",
+    "RN",
+    "RR",
+    "RS",
+    "SC",
+    "SP",
+    "TO"
+  ],
+  "pw_only": [
+    "SE"
+  ],
+  "java_only": [],
+  "ceRoGeradosForaDaSuite": [
+    "CE",
+    "RO"
+  ],
+  "mismatch_count": 0,
+  "missing_in_mock": 0,
+  "extra_in_mock": 0,
+  "signatures": [],
+  "remaining_pom_gaps": [
+    "POM não preenche credor.END_* nem TEL_* do devedor (E2-20).",
+    "POM não preenche INDICE_SIGLA / valor / parcelas se a Nova UX exigir — fills defensivos ifVisible.",
+    "SE continua test.skip (formularioIndisponivel).",
+    "CE/RO fora da suíte até destinos-combo live.",
+    "Não há evidência de que a Nova UX consuma GET /api/form da mesma forma que o v2."
+  ]
+}

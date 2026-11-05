@@ -1,0 +1,171 @@
+{
+  "startedAt": "2026-11-05T13:35:30.280Z",
+  "perfilMassa": "ADMINISTRADOR",
+  "login": {
+    "status": "senha-expirada",
+    "url": "https://newfront.vbconnection.info/",
+    "snippet": "Pular para o conteúdo A plataforma mais completa e segura para o registro dos seus contratos. Alterar senha Por motivos de segurança, precisamos que você altere a sua senha Senha Atual Nova Senha Confirmação de Senha A senha deve ter no mín",
+    "nota": "Massa e2e usa perfil ADMINISTRADOR, nao MASTER. Senha nao registrada. Nao alteramos senha."
+  },
+  "pages": {
+    "PAGE-01-login": {
+      "url": "https://newfront.vbconnection.info/",
+      "title": "VB Connection",
+      "heading": "Olá! Muito bom ter você aqui novamente.",
+      "elements": [
+        {
+          "i": 0,
+          "tag": "a",
+          "id": "",
+          "role": "a",
+          "name": "Pular para o conteúdo",
+          "formcontrolname": "",
+          "placeholder": "",
+          "type": "",
+          "disabled": false,
+          "ariaRequired": "",
+          "visible": true
+        },
+        {
+          "i": 1,
+          "tag": "input",
+          "id": "login-username",
+          "role": "input",
+          "name": "Entre com seu usuário",
+          "formcontrolname": "username",
+          "placeholder": "Entre com seu usuário",
+          "type": "text",
+          "disabled": false,
+          "ariaRequired": "",
+          "visible": true
+        },
+        {
+          "i": 2,
+          "tag": "input",
+          "id": "login-password",
+          "role": "input",
+          "name": "Digite sua senha",
+          "formcontrolname": "password",
+          "placeholder": "Digite sua senha",
+          "type": "password",
+          "disabled": false,
+          "ariaRequired": "",
+          "visible": true
+        },
+        {
+          "i": 3,
+          "tag": "button",
+          "id": "",
+          "role": "button",
+          "name": "Esqueceu a senha?",
+          "formcontrolname": "",
+          "placeholder": "",
+          "type": "button",
+          "disabled": false,
+          "ariaRequired": "",
+          "visible": true
+        },
+        {
+          "i": 4,
+          "tag": "button",
+          "id": "",
+          "role": "button",
+          "name": "Entrar",
+          "formcontrolname": "",
+          "placeholder": "",
+          "type": "submit",
+          "disabled": false,
+          "ariaRequired": "",
+          "visible": true
+        },
+        {
+          "i": 5,
+          "tag": "button",
+          "id": "",
+          "role": "button",
+          "name": "Acessar com certificado digital",
+          "formcontrolname": "",
+          "placeholder": "",
+          "type": "button",
+          "disabled": false,
+          "ariaRequired": "",
+          "visible": true
+        }
+      ]
+    },
+    "PAGE-01-senha-expirada": {
+      "url": "https://newfront.vbconnection.info/",
+      "heading": "Alterar senha",
+      "elements": [
+        {
+          "i": 0,
+          "tag": "a",
+          "id": "",
+          "role": "a",
+          "name": "Pular para o conteúdo",
+          "formcontrolname": "",
+          "placeholder": "",
+          "type": "",
+          "disabled": false,
+          "ariaRequired": "",
+          "visible": true
+        },
+        {
+          "i": 1,
+          "tag": "input",
+          "id": "expirada-password",
+          "role": "input",
+          "name": "Digite sua senha",
+          "formcontrolname": "",
+          "placeholder": "Digite sua senha",
+          "type": "password",
+          "disabled": false,
+          "ariaRequired": "",
+          "visible": true
+        },
+        {
+          "i": 2,
+          "tag": "input",
+          "id": "expirada-new-password",
+          "role": "input",
+          "name": "Digite sua senha",
+          "formcontrolname": "",
+          "placeholder": "Digite sua senha",
+          "type": "password",
+          "disabled": false,
+          "ariaRequired": "",
+          "visible": true
+        },
+        {
+          "i": 3,
+          "tag": "input",
+          "id": "expirada-confirm-password",
+          "role": "input",
+          "name": "Digite sua senha",
+          "formcontrolname": "",
+          "placeholder": "Digite sua senha",
+          "type": "password",
+          "disabled": false,
+          "ariaRequired": "",
+          "visible": true
+        },
+        {
+          "i": 4,
+          "tag": "button",
+          "id": "",
+          "role": "button",
+          "name": "Alterar Senha",
+          "formcontrolname": "",
+          "placeholder": "",
+          "type": "submit",
+          "disabled": true,
+          "ariaRequired": "",
+          "visible": true
+        }
+      ],
+      "bodySnippet": "Pular para o conteúdo A plataforma mais completa e segura para o registro dos seus contratos. Alterar senha Por motivos de segurança, precisamos que você altere a sua senha Senha Atual Nova Senha Confirmação de Senha A senha deve ter no mínimo 8 caracteres A senha deve conter pelo menos 1 letra maiúscula A senha deve conter pelo menos 1 letra minúscula A senha deve conter pelo menos 1 caractere especial A senha deve conter pelo menos 1 número Confirmação igual à nova senha Alterar Senha Uma solu"
+    }
+  },
+  "destinos": [],
+  "ufs": {}
+}

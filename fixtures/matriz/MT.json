@@ -1,0 +1,496 @@
+{
+  "uf": "MT",
+  "origem": "docs/qa-mapping/evidence/matriz-form.json",
+  "fonteJava": "auto.core/src/main/java/serasa/core/formulario/matriz/MatrizDados*.java",
+  "fonteHash": "a9d8534a1afe8849",
+  "idHmg": 233,
+  "naSuitePlaywright": true,
+  "secoes": {
+    "DADOS_AGENTE_FINANCEIRO": true,
+    "DADOS_VEICULO": true,
+    "DADOS_CONTRATO": true,
+    "DADOS_DEVEDOR": true,
+    "DADOS_CREDOR": true,
+    "DADOS_COMPLEMENTARES": true,
+    "DADOS_TERCEIRO_GARANTIDOR": false,
+    "DADOS_ADITIVO": true
+  },
+  "campos": {
+    "DADOS_AGENTE_FINANCEIRO": {
+      "CODIGO_DETRAN": [
+        true,
+        false
+      ],
+      "NOME": [
+        true,
+        false
+      ],
+      "NUMERO_DOCUMENTO": [
+        true,
+        true
+      ]
+    },
+    "DADOS_VEICULO": {
+      "ANO_FABRICACAO": [
+        true,
+        false
+      ],
+      "ANO_MODELO": [
+        true,
+        false
+      ],
+      "DESCRICAO_COR_VEICULO": [
+        false,
+        false
+      ],
+      "INDICA_NOVO_USADO": [
+        false,
+        false
+      ],
+      "LISTA_VEICULOS": [
+        false,
+        false
+      ],
+      "MARCA": [
+        true,
+        false
+      ],
+      "MARCA_BEM": [
+        false,
+        false
+      ],
+      "MODELO": [
+        false,
+        false
+      ],
+      "MODELO_BEM": [
+        false,
+        false
+      ],
+      "NUMERO_CHASSI": [
+        true,
+        true
+      ],
+      "NUMERO_MOTOR": [
+        false,
+        false
+      ],
+      "NUMERO_RESTRICAO": [
+        true,
+        true
+      ],
+      "PLACA": [
+        true,
+        false
+      ],
+      "PLACA_UF": [
+        true,
+        false
+      ],
+      "REMARCADO": [
+        false,
+        false
+      ],
+      "RENAVAM": [
+        true,
+        false
+      ],
+      "TIPO_CATEGORIA_VEICULO": [
+        false,
+        false
+      ],
+      "TIPO_COMBUSTIVEL_BEM": [
+        false,
+        false
+      ],
+      "TIPO_ESPECIE": [
+        false,
+        false
+      ],
+      "UF_LICENCIAMENTO": [
+        false,
+        false
+      ],
+      "VERSAO_MODELO_BEM": [
+        false,
+        false
+      ]
+    },
+    "DADOS_CONTRATO": {
+      "COMISSAO_VALOR": [
+        true,
+        false
+      ],
+      "DATA_ANULACAO": [
+        false,
+        false
+      ],
+      "DATA_ASSINATURA": [
+        false,
+        false
+      ],
+      "DATA_BAIXA": [
+        false,
+        false
+      ],
+      "DATA_CADASTRO": [
+        false,
+        false
+      ],
+      "DATA_COMPRA": [
+        false,
+        false
+      ],
+      "DATA_CONTRATO": [
+        false,
+        false
+      ],
+      "DATA_DOCUMENTO": [
+        false,
+        false
+      ],
+      "DATA_LIBERACAO_CREDITO": [
+        true,
+        true
+      ],
+      "DATA_PAGAMENTO": [
+        false,
+        false
+      ],
+      "DATA_REGISTRO": [
+        false,
+        false
+      ],
+      "EMAIL_CONTRATO": [
+        false,
+        false
+      ],
+      "EPOCA_PAGAMENTO": [
+        false,
+        false
+      ],
+      "FORMA_CONTRATO": [
+        false,
+        false
+      ],
+      "IOF_VALOR": [
+        false,
+        false
+      ],
+      "JUROS_TAXA_ANUAL": [
+        true,
+        false
+      ],
+      "JUROS_TAXA_MENSAL": [
+        true,
+        false
+      ],
+      "LOCAL_PAGAMENTO": [
+        false,
+        false
+      ],
+      "MUNICIPIO_LIBERACAO_CREDITO": [
+        true,
+        true
+      ],
+      "MUNICIPIO_LOCAL_PAGAMENTO": [
+        false,
+        false
+      ],
+      "NO_REGISTRO_CONTRATO_SIRCOF": [
+        false,
+        false
+      ],
+      "NUMERO": [
+        true,
+        true
+      ],
+      "NUMERO_DUDA": [
+        false,
+        false
+      ],
+      "NUMERO_PARCELAS": [
+        true,
+        true
+      ],
+      "NUMERO_REGISTRO": [
+        false,
+        false
+      ],
+      "PENALIDADE_DESCRICAO": [
+        false,
+        false
+      ],
+      "TIPO_CONTRATO": [
+        true,
+        false
+      ],
+      "TIPO_RESTRICAO": [
+        true,
+        true
+      ],
+      "UF_LIBERACAO_CREDITO": [
+        true,
+        true
+      ],
+      "UF_LOCAL_PAGAMENTO": [
+        false,
+        false
+      ],
+      "VALOR_PARCELA": [
+        true,
+        false
+      ],
+      "VALOR_TOTAL": [
+        true,
+        true
+      ],
+      "VENCIMENTO_PRIMEIRA_PARCELA": [
+        true,
+        true
+      ],
+      "VENCIMENTO_ULTIMA_PARCELA": [
+        true,
+        true
+      ],
+      "VIGENCIA_CONTRATO": [
+        false,
+        false
+      ]
+    },
+    "DADOS_DEVEDOR": {
+      "CEL_DDD": [
+        false,
+        false
+      ],
+      "CEL_NUMERO": [
+        false,
+        false
+      ],
+      "EMAIL": [
+        true,
+        false
+      ],
+      "END_BAIRRO": [
+        true,
+        false
+      ],
+      "END_CEP": [
+        true,
+        false
+      ],
+      "END_COMPLEMENTO": [
+        true,
+        false
+      ],
+      "END_LOGRADOURO": [
+        true,
+        false
+      ],
+      "END_MUNICIPIO": [
+        true,
+        true
+      ],
+      "END_NUMERO": [
+        true,
+        false
+      ],
+      "END_UF": [
+        true,
+        true
+      ],
+      "NOME": [
+        true,
+        true
+      ],
+      "NUMERO_DOCUMENTO": [
+        true,
+        true
+      ],
+      "TEL_DDD": [
+        true,
+        true
+      ],
+      "TEL_NUMERO": [
+        true,
+        true
+      ]
+    },
+    "DADOS_CREDOR": {
+      "EMAIL": [
+        true,
+        false
+      ],
+      "END_BAIRRO": [
+        true,
+        false
+      ],
+      "END_CEP": [
+        true,
+        false
+      ],
+      "END_COMPLEMENTO": [
+        true,
+        false
+      ],
+      "END_LOGRADOURO": [
+        true,
+        false
+      ],
+      "END_MUNICIPIO": [
+        true,
+        false
+      ],
+      "END_NUMERO": [
+        true,
+        false
+      ],
+      "END_UF": [
+        true,
+        false
+      ],
+      "TEL_DDD": [
+        true,
+        false
+      ],
+      "TEL_NUMERO": [
+        true,
+        false
+      ]
+    },
+    "DADOS_COMPLEMENTARES": {
+      "CORRECAO_MONETARIA": [
+        false,
+        false
+      ],
+      "FUNDO_RESERVA_PREV": [
+        false,
+        false
+      ],
+      "GRUPO_CONSORCIO": [
+        true,
+        false
+      ],
+      "INDICE_SIGLA": [
+        true,
+        false
+      ],
+      "MORA_TAXA": [
+        true,
+        false
+      ],
+      "MORA_VALOR": [
+        false,
+        false
+      ],
+      "MULTA_TAXA": [
+        true,
+        false
+      ],
+      "MULTA_VALOR": [
+        false,
+        false
+      ],
+      "NUMERO_CND": [
+        false,
+        false
+      ],
+      "NUMERO_COTA_CONSORCIO": [
+        true,
+        false
+      ],
+      "OPCAO_COMPRA": [
+        false,
+        false
+      ],
+      "TOTAL_TAXA_ADMIN": [
+        false,
+        false
+      ],
+      "VALOR_TAC": [
+        false,
+        false
+      ]
+    },
+    "DADOS_TERCEIRO_GARANTIDOR": {
+      "CODIGO_DETRAN": [
+        false,
+        false
+      ],
+      "EMAIL": [
+        false,
+        false
+      ],
+      "END_BAIRRO": [
+        false,
+        false
+      ],
+      "END_CEP": [
+        false,
+        false
+      ],
+      "END_COMPLEMENTO": [
+        false,
+        false
+      ],
+      "END_LOGRADOURO": [
+        false,
+        false
+      ],
+      "END_MUNICIPIO": [
+        false,
+        false
+      ],
+      "END_NUMERO": [
+        false,
+        false
+      ],
+      "END_UF": [
+        false,
+        false
+      ],
+      "NOME": [
+        false,
+        false
+      ],
+      "NUMERO_DOCUMENTO": [
+        false,
+        false
+      ],
+      "TEL_CELULAR": [
+        false,
+        false
+      ],
+      "TEL_DDD": [
+        false,
+        false
+      ],
+      "TEL_NUMERO": [
+        false,
+        false
+      ]
+    },
+    "DADOS_ADITIVO": {
+      "ADITIVO_DATA": [
+        true,
+        true
+      ],
+      "ADITIVO_NUMERO": [
+        true,
+        true
+      ],
+      "ADITIVO_NUMERO_REGISTRO": [
+        false,
+        false
+      ],
+      "NO_REGISTRO_ADITIVO_SIRCOF": [
+        false,
+        false
+      ],
+      "TIPO_ADITIVO": [
+        false,
+        false
+      ]
+    }
+  }
+}

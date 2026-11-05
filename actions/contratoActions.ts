@@ -23,9 +23,10 @@ export class ContratoActions {
 
   async preencherRegistro(mass: ContratoRegistroMass, config: DetranConfig): Promise<void> {
     await this.contratoPage.selecionarAgenteFinanceiro(mass.agente.label);
-    await this.contratoPage.preencherVeiculo(mass.veiculo);
-    await this.contratoPage.preencherContrato(mass.contrato);
+    await this.contratoPage.preencherVeiculo(mass.veiculo, config.uf);
+    await this.contratoPage.preencherContrato(mass);
     await this.contratoPage.preencherDevedor(mass.devedor, config);
+    await this.contratoPage.preencherCredorEComplemento(mass);
   }
 
   async validarCamposObrigatorios(config: DetranConfig): Promise<void> {

@@ -2,12 +2,13 @@ import { test, expect } from '@playwright/test';
 import { HomePage } from '../../pages/homePage';
 import { ContratoPage } from '../../pages/contratoPage';
 import { mockLoginApis, seedAuthenticatedSession } from '../../support/auth';
-import { mockContratoCadastroApis } from '../../support/contratoCadastroMocks';
+import { annotateMockedExecution, mockContratoCadastroApis } from '../../support/contratoCadastroMocks';
 import { hideThirdPartyOverlays } from '../../support/navigation';
 import { mockApiSilence, mockHomeApis } from '../../support/novaUxMocks';
 
-test.describe('Home — atalho Registro de Contrato @novaux @home @contrato @smoke', () => {
+test.describe('Home — atalho Registro de Contrato @novaux @home @contrato @smoke @mocked', () => {
   test.beforeEach(async ({ page }) => {
+    annotateMockedExecution();
     await mockApiSilence(page);
     await mockLoginApis(page);
     await mockHomeApis(page);

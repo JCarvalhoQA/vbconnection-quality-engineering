@@ -2,11 +2,12 @@ import { test, expect } from '@playwright/test';
 import { ContratoActions } from '../../actions/contratoActions';
 import { detranConfig } from '../../config/detransIds';
 import { mockLoginApis, seedAuthenticatedSession } from '../../support/auth';
-import { mockContratoCadastroApis } from '../../support/contratoCadastroMocks';
+import { annotateMockedExecution, mockContratoCadastroApis } from '../../support/contratoCadastroMocks';
 import { mockApiSilence } from '../../support/novaUxMocks';
 
-test.describe('Acessibilidade — registro de contrato @novaux @a11y @contrato', () => {
+test.describe('Acessibilidade — registro de contrato @novaux @a11y @contrato @mocked', () => {
   test.beforeEach(async ({ page }) => {
+    annotateMockedExecution();
     await mockApiSilence(page);
     await mockLoginApis(page);
     await mockContratoCadastroApis(page, 'BA');

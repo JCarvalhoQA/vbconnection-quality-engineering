@@ -1,4 +1,5 @@
 import { Page, Route, test } from '@playwright/test';
+import { destinosEstruturaisCombo } from '../config/destinosEstruturais';
 import { DETRAN_CONFIG, DetranUf, detranConfig } from '../config/detransIds';
 import { UFS } from '../config/ufsConfig';
 import { obterEnderecoPorCep, obterEnderecoPorUf } from '../factories/massaDadosFactory';
@@ -25,13 +26,24 @@ const corsHeaders = {
   'content-type': 'application/json',
 };
 
-const UFS_COMBO = Object.values(DETRAN_CONFIG).map((item, index) => ({
-  id: item.id,
-  codigo: item.uf,
-  nome: item.uf,
-  sigla: item.uf,
-  ordem: index,
-}));
+const UFS_COMBO = [
+  ...Object.values(DETRAN_CONFIG).map((item, index) => ({
+    id: item.id,
+    codigo: item.uf,
+    nome: item.uf,
+    sigla: item.uf,
+    ordem: index,
+  })),
+  ...destinosEstruturaisCombo()
+    .filter((item) => !(item.uf in DETRAN_CONFIG))
+    .map((item, index) => ({
+      id: item.id,
+      codigo: item.uf,
+      nome: item.uf,
+      sigla: item.uf,
+      ordem: 100 + index,
+    })),
+];
 
 const CIDADES = UFS_COMBO.map((uf) => ({
   id: uf.id * 100,
@@ -72,8 +84,35 @@ function isApiRequest(url: string): boolean {
   );
 }
 
-export function protocoloRegistro(uf: DetranUf): string {
+export function protocoloRegistro(uf: string): string {
   return `E2E-${uf}-${Date.now()}`;
+}
+
+function destinoMock(uf: string): { id: number; uf: string; nomeFantasia: string; razaoSocial: string } {
+  if (Object.prototype.hasOwnProperty.call(DETRAN_CONFIG, uf)) {
+    return detranConfig(uf as DetranUf);
+  }
+  const extra = destinosEstruturaisCombo().find((item) => item.uf === uf);
+  if (!extra) {
+    throw new MatrizIndisponivelError(uf);
+  }
+  return extra;
+}
+
+function destinosComboMock(): Array<{ id: number; nomeFantasia: string; razaoSocial: string }> {
+  const byUf = new Map<string, { id: number; nomeFantasia: string; razaoSocial: string }>();
+  for (const item of Object.values(DETRAN_CONFIG)) {
+    if (item.uf === 'SE') {
+      continue;
+    }
+    byUf.set(item.uf, { id: item.id, nomeFantasia: item.nomeFantasia, razaoSocial: item.razaoSocial });
+  }
+  for (const item of destinosEstruturaisCombo()) {
+    if (!byUf.has(item.uf)) {
+      byUf.set(item.uf, { id: item.id, nomeFantasia: item.nomeFantasia, razaoSocial: item.razaoSocial });
+    }
+  }
+  return [...byUf.values()];
 }
 
 export function annotateMockedExecution(): void {
@@ -84,28 +123,21 @@ export function annotateMockedExecution(): void {
 /**
  * Mock + persistGuard. Guard fica por último (LIFO) para abortar persistência real.
  */
-export async function mockContratoCadastroApis(page: Page, uf: DetranUf): Promise<string> {
+export async function mockContratoCadastroApis(page: Page, uf: string): Promise<string> {
   const protocolo = await mockContratoCadastroApisOnly(page, uf);
   await installPersistGuard(page, { mode: 'mocked' });
   return protocolo;
 }
 
-export async function mockContratoCadastroApisOnly(page: Page, uf: DetranUf): Promise<string> {
+export async function mockContratoCadastroApisOnly(page: Page, uf: string): Promise<string> {
   if (uf === 'SE') {
     throw new MatrizIndisponivelError('SE');
   }
 
-  const destino = detranConfig(uf);
+  const destino = destinoMock(uf);
   const matriz = loadMatrizFixture(uf);
   const protocolo = protocoloRegistro(uf);
-
-  const destinos = Object.values(DETRAN_CONFIG)
-    .filter((item) => item.uf !== 'SE')
-    .map((item) => ({
-      id: item.id,
-      nomeFantasia: item.nomeFantasia,
-      razaoSocial: item.razaoSocial,
-    }));
+  const destinos = destinosComboMock();
 
   await page.route((url) => isApiRequest(url.toString()), async (route) => {
     const requestUrl = route.request().url();

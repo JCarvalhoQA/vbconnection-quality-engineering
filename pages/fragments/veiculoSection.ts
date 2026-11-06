@@ -17,6 +17,7 @@ export class VeiculoSection {
   readonly zeroKm: Locator;
   readonly motor: Locator;
   readonly novoUsado: Locator;
+  readonly anoFabricacao: Locator;
   readonly ufPlaca: Locator;
   readonly placa: Locator;
   readonly renavam: Locator;
@@ -35,6 +36,7 @@ export class VeiculoSection {
     this.zeroKm = this.secao.getByRole('combobox', { name: /Veículo zero km/i });
     this.motor = this.secao.getByRole('textbox', { name: /Número motor/i });
     this.novoUsado = this.secao.getByRole('combobox', { name: /Novo\s*\/\s*usado/i });
+    this.anoFabricacao = this.secao.getByRole('textbox', { name: /Ano fabricação/i });
     this.ufPlaca = this.secao.getByRole('combobox', { name: /UF da placa/i });
     this.placa = this.secao.getByRole('textbox', { name: /^Placa/i }).or(this.secao.getByPlaceholder('Placa'));
     this.renavam = this.secao.getByRole('textbox', { name: /RENAVAM/i }).or(this.secao.getByPlaceholder('RENAVAM'));
@@ -77,6 +79,7 @@ export class VeiculoSection {
     if (motorEsperado) {
       await expect(this.motor).toBeVisible();
     }
+    await this.expectAnoFabricacao(profile);
     await this.expectCamposPlaca(false);
   }
 
@@ -98,6 +101,17 @@ export class VeiculoSection {
     await expect(this.ufPlaca).toBeHidden();
     await expect(this.placa.first()).toBeHidden();
     await expect(this.renavam.first()).toBeHidden();
+  }
+
+  async expectAnoFabricacao(profile: UfUiProfile): Promise<void> {
+    const campo = profile.veiculo.camposZeroKmSim.find((item) => item.formControl === 'ano');
+    if (!campo) {
+      return;
+    }
+    await expect(this.anoFabricacao).toBeVisible();
+    if (campo.requiredVisual) {
+      await expect(this.marcaObrigatorio(/Ano fabricação/i)).toBeVisible();
+    }
   }
 
   async expectNovoUsado(visivel: boolean, obrigatorioVisual = false): Promise<void> {

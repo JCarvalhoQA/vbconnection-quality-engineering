@@ -78,6 +78,9 @@ const failed = runSummary({
 assert.match(failed.markdown, /testes concluídos com falhas/);
 assert.match(failed.markdown, /Reprovados \| 1/);
 assert.match(failed.markdown, /VA-1774 abre o formulário de registro a partir da home/);
+assert.match(failed.markdown, /Falha de sincronização|Falha de locator|Falha funcional/);
+assert.match(failed.markdown, /sintoma do teste/);
+assert.match(failed.markdown, /### Flaky/);
 assert.match(failed.output, /classification=testes-reprovados/);
 
 const infra = runSummary({

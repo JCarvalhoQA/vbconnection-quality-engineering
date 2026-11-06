@@ -73,11 +73,11 @@ export async function gotoApp(page: Page, path = '/'): Promise<void> {
     .catch(() => false);
 
   if (autenticado) {
-    await settleAuthenticatedShell(page);
+    await waitForAuthenticatedShellIdle(page);
     await navigateClientOnce(page, target);
     const landed = await waitForTarget(page, target, 8_000);
     if (!landed) {
-      await settleAuthenticatedShell(page);
+      await waitForAuthenticatedShellIdle(page);
       await navigateClientOnce(page, target);
       await page.waitForURL((url) => pathnameMatchesTarget(url.pathname, target), { timeout: 15_000 });
     }
@@ -88,7 +88,11 @@ export async function gotoApp(page: Page, path = '/'): Promise<void> {
   await hideThirdPartyOverlays(page);
 }
 
-async function settleAuthenticatedShell(page: Page): Promise<void> {
+/**
+ * Espera o shell autenticado parar de navegar sozinho (bootstrap Angular).
+ * Usar antes de cliques de atalho na home — `force: true` neste estado perde o (click).
+ */
+export async function waitForAuthenticatedShellIdle(page: Page): Promise<void> {
   await page
     .waitForURL((url) => url.pathname.includes('/vbconnection/home') || url.pathname === '/', {
       timeout: 15_000,

@@ -3,7 +3,6 @@ import { HomePage } from '../../pages/homePage';
 import { ContratoPage } from '../../pages/contratoPage';
 import { mockLoginApis, seedAuthenticatedSession } from '../../support/auth';
 import { annotateMockedExecution, mockContratoCadastroApis } from '../../support/contratoCadastroMocks';
-import { hideThirdPartyOverlays } from '../../support/navigation';
 import { mockApiSilence, mockHomeApis } from '../../support/novaUxMocks';
 
 test.describe('Home — atalho Registro de Contrato @novaux @home @contrato @smoke @mocked', () => {
@@ -22,14 +21,7 @@ test.describe('Home — atalho Registro de Contrato @novaux @home @contrato @smo
 
     await home.acessar();
     await expect(page.getByRole('heading', { name: 'Atividades mais frequentes' })).toBeVisible();
-    await hideThirdPartyOverlays(page);
-
-    const atalho = home.quickAccess('Registro de Contrato');
-    await atalho.scrollIntoViewIfNeeded();
-    await expect(atalho).toBeVisible();
-    await atalho.click({ force: true });
-
-    await expect(page).toHaveURL(/\/vbconnection\/contrato\/inserir/, { timeout: 15_000 });
+    await home.abrirAtalho('Registro de Contrato', /\/vbconnection\/contrato\/inserir/);
     await expect(contrato.heading).toBeVisible();
     await expect(contrato.destino).toBeVisible();
   });

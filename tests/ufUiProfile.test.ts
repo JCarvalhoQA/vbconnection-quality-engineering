@@ -64,6 +64,10 @@ test.describe('Perfil visual de UF @mocked', () => {
       expect(loadUfUiProfile(uf).terceiroGarantidor.visivel).toBe(true);
     }
     expect(loadUfUiProfile('BA').terceiroGarantidor.visivel).toBe(false);
+    expect(loadUfUiProfile('RO').terceiroGarantidor.visivel).toBe(false);
+    expect(loadUfUiProfile('CE').terceiroGarantidor.campoCount).toBe(12);
+    expect(loadUfUiProfile('CE').terceiroGarantidor.campos).toHaveLength(12);
+    expect(loadUfUiProfile('CE').terceiroGarantidor.campos.every((campo) => campo.requiredVisual === false)).toBe(true);
   });
 
   test('UF ausente falha de forma explícita', () => {

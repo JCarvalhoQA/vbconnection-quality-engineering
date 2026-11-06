@@ -38,7 +38,7 @@ on:
           - newfront
           - hmg
       ufs:
-        description: Optional PAGE-02 UFs (e.g. BA,CE,RO or AC,AP,DF,ES). Empty = all implemented structural specs. Ignored unless suite=structural.
+        description: Optional PAGE-02 UFs (e.g. MG,MS,MT,PB or BA,CE,RO,AC,AP,DF,ES). Empty = all implemented structural specs. Ignored unless suite=structural.
         type: string
         required: false
         default: ''
@@ -125,6 +125,8 @@ jobs:
           GIT_SHA: ${{ github.sha }}
           APP_VERSION: ${{ github.ref_name }}
           DEPLOY_ID: independent-qe
+          PLAYWRIGHT_SELECTED_UFS: ${{ steps.select.outputs.ufs }}
+          PLAYWRIGHT_LOTE: ${{ steps.select.outputs.lote }}
         run: node scripts/summarize-e2e-results.mjs
 
       - name: Upload reports
@@ -216,6 +218,8 @@ jobs:
           GIT_SHA: ${{ github.sha }}
           APP_VERSION: ${{ github.ref_name }}
           DEPLOY_ID: independent-qe
+          PLAYWRIGHT_SELECTED_UFS: ${{ steps.select.outputs.ufs }}
+          PLAYWRIGHT_LOTE: ${{ steps.select.outputs.lote }}
         run: node scripts/summarize-e2e-results.mjs
 
       - name: Upload reports

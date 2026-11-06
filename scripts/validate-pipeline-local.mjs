@@ -5,11 +5,16 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { parseAllowedHmgUrl, TargetError } from './hmg-allowlist.mjs';
+import {
+  extractUfsFromSpec,
+  summarizeReport,
+} from './summarize-e2e-results.mjs';
+import { describeLotes } from './uf-lotes.mjs';
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 const summarize = path.join(root, 'summarize-e2e-results.mjs');
 
-function runSummary({ fixture, probeOutcome, e2eOutcome }) {
+function runSummary({ fixture, probeOutcome, e2eOutcome, extraEnv = {} }) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'qa-pipeline-'));
   fs.mkdirSync(path.join(dir, 'test-results'), { recursive: true });
   if (fixture) {
@@ -28,6 +33,7 @@ function runSummary({ fixture, probeOutcome, e2eOutcome }) {
       DEPLOY_ID: 'deploy-local',
       SUITE: 'smoke',
       PLAYWRIGHT_NEWFRONT_URL: 'https://newfront.vbconnection.info',
+      ...extraEnv,
     },
     encoding: 'utf8',
   });
@@ -163,5 +169,91 @@ const ufsOnRegression = runSelect({
   PLAYWRIGHT_UFS: 'AC',
 });
 assert.equal(ufsOnRegression.status, 2, ufsOnRegression.stderr || ufsOnRegression.stdout);
+
+const batch2 = runSelect({
+  PLAYWRIGHT_MODE: 'mocked',
+  GITHUB_EVENT_NAME: 'workflow_dispatch',
+  SUITE: 'structural',
+  PLAYWRIGHT_TARGET: 'newfront',
+  PLAYWRIGHT_UFS: 'MG,MS,MT,PB',
+});
+assert.equal(batch2.status, 0, batch2.stderr || batch2.stdout);
+assert.match(batch2.stdout, /mg-estrutural\.spec\.ts/);
+assert.match(batch2.stdout, /pb-estrutural\.spec\.ts/);
+assert.match(batch2.stdout, /lote=batch-02/);
+assert.doesNotMatch(batch2.stdout, /ba-estrutural\.spec\.ts/);
+assert.doesNotMatch(batch2.stdout, /registro\/mg\.spec\.ts/);
+
+const allStructural = runSelect({
+  PLAYWRIGHT_MODE: 'live-readonly',
+  GITHUB_EVENT_NAME: 'workflow_dispatch',
+  SUITE: 'structural',
+  PLAYWRIGHT_TARGET: 'newfront',
+  PLAYWRIGHT_MASTER_USER: 'master',
+  PLAYWRIGHT_MASTER_PASSWORD: 'secret',
+});
+assert.equal(allStructural.status, 0, allStructural.stderr || allStructural.stdout);
+assert.match(allStructural.stdout, /mg-estrutural\.spec\.ts/);
+assert.match(allStructural.stdout, /ba-estrutural\.spec\.ts/);
+assert.match(allStructural.stdout, /lote=baseline \+ batch-01 \+ batch-02/);
+assert.doesNotMatch(allStructural.stdout, /registro\/ba\.spec\.ts/);
+
+const liveSmoke = runSelect({
+  PLAYWRIGHT_MODE: 'live-readonly',
+  GITHUB_EVENT_NAME: 'workflow_dispatch',
+  SUITE: 'smoke',
+  PLAYWRIGHT_TARGET: 'newfront',
+  PLAYWRIGHT_MASTER_USER: 'master',
+  PLAYWRIGHT_MASTER_PASSWORD: 'secret',
+});
+assert.equal(liveSmoke.status, 0, liveSmoke.stderr || liveSmoke.stdout);
+assert.match(liveSmoke.stdout, /ba-estrutural\.spec\.ts/);
+assert.doesNotMatch(liveSmoke.stdout, /lote=smoke/);
+
+const baSpec = {
+  title: 'valida casca, linha de veículo, zero km e descarte sem Registrar',
+  file: 'e2e/contratos/page02/ba-estrutural.spec.ts',
+  parentTitles: ['PAGE-02 BA estrutura visual @contrato @page02 @ba @live-readonly'],
+  tests: [{ status: 'expected', results: [{ status: 'passed' }] }],
+};
+assert.deepEqual(extractUfsFromSpec(baSpec), ['BA']);
+assert.equal(describeLotes(['BA', 'CE', 'RO', 'AC', 'AP', 'DF', 'ES']), 'baseline + batch-01');
+assert.equal(describeLotes(['MG', 'MS', 'MT', 'PB']), 'batch-02');
+
+const sevenJson = JSON.parse(fs.readFileSync(path.join(root, 'testdata', 'structural-live-seven.json'), 'utf8'));
+const seven = summarizeReport(sevenJson, {
+  selectedUfs: ['AC', 'AP', 'BA', 'CE', 'DF', 'ES', 'RO'],
+});
+assert.deepEqual(seven.ufs.executed, ['AC', 'AP', 'BA', 'CE', 'DF', 'ES', 'RO']);
+assert.deepEqual(seven.ufs.passed, ['AC', 'AP', 'BA', 'CE', 'DF', 'ES', 'RO']);
+assert.equal(seven.passed, 7);
+assert.equal(seven.failed, 0);
+assert.deepEqual(seven.ufs.notRun, []);
+
+const sevenSummary = runSummary({
+  fixture: 'structural-live-seven.json',
+  probeOutcome: 'success',
+  e2eOutcome: 'success',
+  extraEnv: {
+    PLAYWRIGHT_MODE: 'live-readonly',
+    SUITE: 'smoke',
+    PLAYWRIGHT_SELECTED_UFS: 'AC,AP,BA,CE,DF,ES,RO',
+    PLAYWRIGHT_LOTE: 'baseline + batch-01',
+  },
+});
+assert.match(sevenSummary.markdown, /UFs executadas: AC, AP, BA, CE, DF, ES, RO/);
+assert.match(sevenSummary.markdown, /UFs aprovadas: AC, AP, BA, CE, DF, ES, RO/);
+assert.match(sevenSummary.markdown, /Lote: baseline \+ batch-01/);
+assert.doesNotMatch(sevenSummary.markdown, /Lote: smoke/);
+
+const partialJson = JSON.parse(fs.readFileSync(path.join(root, 'testdata', 'structural-partial.json'), 'utf8'));
+const partial = summarizeReport(partialJson, { selectedUfs: ['MG', 'MS', 'MT', 'PB'] });
+assert.deepEqual(partial.ufs.passed, ['MG']);
+assert.deepEqual(partial.ufs.failed, ['MS']);
+assert.deepEqual(partial.ufs.skipped, ['MT']);
+assert.deepEqual(partial.ufs.flaky, ['PB']);
+assert.deepEqual(partial.ufs.executed, ['MG', 'MS', 'PB']);
+assert.deepEqual(partial.ufs.notRun, []);
+assert.equal(partial.failures[0].kind, 'falha-locator');
 
 console.log('validate-pipeline-local: canários locais aprovados');

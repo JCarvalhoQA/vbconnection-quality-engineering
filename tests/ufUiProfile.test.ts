@@ -70,6 +70,42 @@ test.describe('Perfil visual de UF @mocked', () => {
     expect(loadUfUiProfile('CE').terceiroGarantidor.campos.every((campo) => campo.requiredVisual === false)).toBe(true);
   });
 
+  test('lote 3 PE/RN sem TG; PR/RJ com TG de 12 campos sem asterisco visual', () => {
+    for (const uf of ['PE', 'RN'] as const) {
+      const profile = loadUfUiProfile(uf);
+      expect(profile.formularioDisponivel).toBe(true);
+      expect(profile.matrizJava).toBe(true);
+      expect(profile.terceiroGarantidor.visivel).toBe(false);
+      expect(profile.veiculo.novoUsado.visivel).toBe(false);
+      expect(profile.veiculo.zeroKm.default).toBe('Sim');
+      expect(profile.credor).toBe(true);
+      expect(profile.documentos).toBe(true);
+      expect(profile.veiculo.camposZeroKmSim.some((campo) => campo.formControl === 'tipoEspecie')).toBe(false);
+      expect(secaoVisivel(loadMatrizFixture(uf), SECAO_TERCEIRO_GARANTIDOR)).toBe(false);
+    }
+    for (const uf of ['PR', 'RJ'] as const) {
+      const profile = loadUfUiProfile(uf);
+      expect(profile.formularioDisponivel).toBe(true);
+      expect(profile.terceiroGarantidor.visivel).toBe(true);
+      expect(profile.terceiroGarantidor.campoCount).toBe(12);
+      expect(profile.terceiroGarantidor.campos).toHaveLength(12);
+      expect(profile.terceiroGarantidor.campos.every((campo) => campo.requiredVisual === false)).toBe(true);
+      expect(profile.headings).toContain('Terceiro garantidor');
+      expect(profile.veiculo.camposZeroKmSim.some((campo) => campo.formControl === 'tipoEspecie')).toBe(true);
+      expect(secaoVisivel(loadMatrizFixture(uf), SECAO_TERCEIRO_GARANTIDOR)).toBe(true);
+    }
+    expect(loadUfUiProfile('PE').idCombo).toBe(3);
+    expect(loadUfUiProfile('PR').idCombo).toBe(10);
+    expect(loadUfUiProfile('RJ').idCombo).toBe(16);
+    expect(loadUfUiProfile('RN').idCombo).toBe(228);
+    expect(loadUfUiProfile('PE').requiredVisualCount).toBe(24);
+    expect(loadUfUiProfile('PR').requiredVisualCount).toBe(22);
+    expect(loadUfUiProfile('RJ').requiredVisualCount).toBe(25);
+    expect(loadUfUiProfile('RN').requiredVisualCount).toBe(30);
+    const corRj = loadUfUiProfile('RJ').veiculo.camposZeroKmSim.find((campo) => campo.formControl === 'descricaoCorVeiculo');
+    expect(corRj?.requiredVisual).toBe(true);
+  });
+
   test('lote 2 MG/MS/MT/PB sem TG e sem Novo/usado na UI live', () => {
     for (const uf of ['MG', 'MS', 'MT', 'PB'] as const) {
       const profile = loadUfUiProfile(uf);

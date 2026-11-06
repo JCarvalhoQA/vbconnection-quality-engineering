@@ -184,6 +184,36 @@ assert.match(batch2.stdout, /lote=batch-02/);
 assert.doesNotMatch(batch2.stdout, /ba-estrutural\.spec\.ts/);
 assert.doesNotMatch(batch2.stdout, /registro\/mg\.spec\.ts/);
 
+const batch3 = runSelect({
+  PLAYWRIGHT_MODE: 'mocked',
+  GITHUB_EVENT_NAME: 'workflow_dispatch',
+  SUITE: 'structural',
+  PLAYWRIGHT_TARGET: 'newfront',
+  PLAYWRIGHT_UFS: 'PE,PR,RJ,RN',
+});
+assert.equal(batch3.status, 0, batch3.stderr || batch3.stdout);
+assert.match(batch3.stdout, /pe-estrutural\.spec\.ts/);
+assert.match(batch3.stdout, /pr-estrutural\.spec\.ts/);
+assert.match(batch3.stdout, /rj-estrutural\.spec\.ts/);
+assert.match(batch3.stdout, /rn-estrutural\.spec\.ts/);
+assert.match(batch3.stdout, /lote=batch-03/);
+assert.doesNotMatch(batch3.stdout, /ba-estrutural\.spec\.ts/);
+assert.doesNotMatch(batch3.stdout, /registro\/pr\.spec\.ts/);
+
+const accumulated = runSelect({
+  PLAYWRIGHT_MODE: 'live-readonly',
+  GITHUB_EVENT_NAME: 'workflow_dispatch',
+  SUITE: 'structural',
+  PLAYWRIGHT_TARGET: 'newfront',
+  PLAYWRIGHT_MASTER_USER: 'master',
+  PLAYWRIGHT_MASTER_PASSWORD: 'secret',
+  PLAYWRIGHT_UFS: 'AC,AP,BA,CE,DF,ES,MG,MS,MT,PB,PE,PR,RJ,RN,RO',
+});
+assert.equal(accumulated.status, 0, accumulated.stderr || accumulated.stdout);
+assert.match(accumulated.stdout, /rn-estrutural\.spec\.ts/);
+assert.match(accumulated.stdout, /lote=baseline \+ batch-01 \+ batch-02 \+ batch-03/);
+assert.doesNotMatch(accumulated.stdout, /registro\/rj\.spec\.ts/);
+
 const allStructural = runSelect({
   PLAYWRIGHT_MODE: 'live-readonly',
   GITHUB_EVENT_NAME: 'workflow_dispatch',
@@ -195,7 +225,8 @@ const allStructural = runSelect({
 assert.equal(allStructural.status, 0, allStructural.stderr || allStructural.stdout);
 assert.match(allStructural.stdout, /mg-estrutural\.spec\.ts/);
 assert.match(allStructural.stdout, /ba-estrutural\.spec\.ts/);
-assert.match(allStructural.stdout, /lote=baseline \+ batch-01 \+ batch-02/);
+assert.match(allStructural.stdout, /lote=baseline \+ batch-01 \+ batch-02 \+ batch-03/);
+assert.match(allStructural.stdout, /pe-estrutural\.spec\.ts/);
 assert.doesNotMatch(allStructural.stdout, /registro\/ba\.spec\.ts/);
 
 const liveSmoke = runSelect({

@@ -43,9 +43,10 @@ export class ContratoPage extends FormPage {
 
   async acessar(): Promise<void> {
     await gotoApp(this.page, '/vbconnection/contrato/inserir');
-    await expect(this.heading).toBeVisible();
-    await expect(this.destino).toBeVisible();
+    await hideThirdPartyOverlays(this.page);
     await this.aguardarCarregamento();
+    await expect(this.heading).toBeVisible({ timeout: 15_000 });
+    await expect(this.destino).toBeVisible();
   }
 
   async selecionarDestino(nomeFantasia: string): Promise<void> {

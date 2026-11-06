@@ -10,8 +10,8 @@ export interface DestinoEstrutural {
   readonly razaoSocial: string;
 }
 
-/** Specs estruturais já implementadas (baseline + lote 1). */
-export const UFS_ESTRUTURAIS = ['BA', 'CE', 'RO', 'AC', 'AP', 'DF', 'ES'] as const;
+/** Specs estruturais já implementadas (baseline + lotes 1 e 2). */
+export const UFS_ESTRUTURAIS = ['BA', 'CE', 'RO', 'AC', 'AP', 'DF', 'ES', 'MG', 'MS', 'MT', 'PB'] as const;
 export type UfEstrutural = (typeof UFS_ESTRUTURAIS)[number];
 
 export const LOTE_BASELINE = ['BA', 'CE', 'RO'] as const;
@@ -30,6 +30,10 @@ export const DESTINOS_ESTRUTURAIS: Record<UfEstrutural, DestinoEstrutural> = {
   AP: destino('AP', 225),
   DF: destino('DF', 232),
   ES: destino('ES', 230),
+  MG: destino('MG', 9),
+  MS: destino('MS', 226),
+  MT: destino('MT', 233),
+  PB: destino('PB', 13),
 };
 
 function destino(uf: UfEstrutural, id: number): DestinoEstrutural {

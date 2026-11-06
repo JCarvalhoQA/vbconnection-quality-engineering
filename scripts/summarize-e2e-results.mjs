@@ -51,12 +51,18 @@ function locationOf(spec) {
   return line ? `${file}:${line}` : file;
 }
 
+function stripAnsi(text) {
+  return String(text || '').replace(/\u001b\[[0-9;]*m/g, '');
+}
+
 function firstError(result) {
   const error = result?.error || (result?.errors || [])[0];
   if (!error) return { message: '', stack: '' };
+  const raw = stripAnsi(String(error.message || error));
+  const preview = raw.split('\n').slice(0, 8).join(' ');
   return {
-    message: sanitizeReportText(String(error.message || error).split('\n')[0]),
-    stack: sanitizeReportText(String(error.stack || '')),
+    message: sanitizeReportText(preview),
+    stack: sanitizeReportText(stripAnsi(String(error.stack || ''))),
   };
 }
 
@@ -83,7 +89,7 @@ export function extractUfsFromSpec(spec) {
 }
 
 export function classifyFailureKind(message = '', spec = {}) {
-  const msg = String(message || '').toLowerCase();
+  const msg = stripAnsi(String(message || '')).toLowerCase();
   const title = String(spec.title || '').toLowerCase();
   const hay = `${msg} ${title}`;
   if (/skip|ignorad|gate \d live exige|piloto live-readonly exige/.test(hay)) {

@@ -14,7 +14,7 @@ Live baseline: [run 42255471291](https://github.com/JCarvalhoQA/vbconnection-qua
 
 `ContratoPage`, `VeiculoSection`, `page02Structural`, `page02LiveSession`, `ufUiProfile`, `LIVE-FIELD-INVENTORY.json`, `ngZorroField`, `ci-select.mjs`, `summarize-e2e-results.mjs`.
 
-## Não executado nesta auditoria
+## Pós-merge (atualização)
 
-- Live de PE/PR/RJ/RN.
-- Rotação da senha Master (ver `LIVE-SECURITY-AUDIT.md`).
+Live acumulado das 15 UFs: [run 42267723718](https://github.com/JCarvalhoQA/vbconnection-quality-engineering/actions/runs/42267723718) — 15 passed / 0 failed / 0 flaky.  
+Rotação da senha Master continua sem evidência (ver `LIVE-SECURITY-AUDIT.md`).

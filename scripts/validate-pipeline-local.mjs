@@ -106,9 +106,13 @@ assert.match(unavailable.markdown, /aplicação HMG indisponível/);
 assert.match(unavailable.output, /classification=aplicacao-indisponivel/);
 
 function runSelect(env) {
+  const merged = { ...process.env, ...env };
+  if (!Object.prototype.hasOwnProperty.call(env, 'GITHUB_REF')) {
+    delete merged.GITHUB_REF;
+  }
   return spawnSync(process.execPath, [path.join(root, 'ci-select.mjs')], {
     encoding: 'utf8',
-    env: { ...process.env, ...env },
+    env: merged,
   });
 }
 
@@ -121,6 +125,19 @@ const prLive = runSelect({
   PLAYWRIGHT_MASTER_PASSWORD: '',
 });
 assert.equal(prLive.status, 2, prLive.stderr || prLive.stdout);
+
+const liveFeatureBranch = runSelect({
+  PLAYWRIGHT_MODE: 'live-readonly',
+  GITHUB_EVENT_NAME: 'workflow_dispatch',
+  GITHUB_REF: 'refs/heads/feat/playwright-etapa-13-quality-audit',
+  SUITE: 'structural',
+  PLAYWRIGHT_TARGET: 'newfront',
+  PLAYWRIGHT_MASTER_USER: 'master',
+  PLAYWRIGHT_MASTER_PASSWORD: 'secret',
+  PLAYWRIGHT_UFS: 'MA,TO',
+});
+assert.equal(liveFeatureBranch.status, 2, liveFeatureBranch.stderr || liveFeatureBranch.stdout);
+assert.match(liveFeatureBranch.stderr || liveFeatureBranch.stdout, /restricted to refs\/heads\/main/);
 
 const hmg = runSelect({
   PLAYWRIGHT_MODE: 'mocked',

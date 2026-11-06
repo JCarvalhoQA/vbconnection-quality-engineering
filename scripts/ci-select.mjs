@@ -1,6 +1,8 @@
 /**
- * Validates PLAYWRIGHT_MODE / SUITE / PLAYWRIGHT_TARGET and prints Playwright args.
- * Pull requests cannot select live-readonly. Target hmg is rejected (institutional site).
+ * Validates PLAYWRIGHT_MODE / SUITE / PLAYWRIGHT_TARGET / PLAYWRIGHT_UFS
+ * and prints Playwright args. Pull requests cannot select live-readonly.
+ * Target hmg is rejected (institutional site). UFS only apply to suite=structural
+ * and only to implemented PAGE-02 specs — never to persistent registration.
  */
 import { appendFileSync } from 'node:fs';
 
@@ -8,10 +10,40 @@ const mode = process.env.PLAYWRIGHT_MODE || 'mocked';
 const suite = process.env.SUITE || 'smoke';
 const target = process.env.PLAYWRIGHT_TARGET || 'newfront';
 const eventName = process.env.GITHUB_EVENT_NAME || '';
+const ufsRaw = process.env.PLAYWRIGHT_UFS || '';
+
+/** Specs estruturais já existentes. Não inclui lotes futuros nem SE. */
+export const STRUCTURAL_UFS_IMPLEMENTED = ['AC', 'AP', 'BA', 'CE', 'DF', 'ES', 'RO'];
 
 function fail(message) {
   console.error(`::error::${message}`);
   process.exit(2);
+}
+
+export function parseStructuralUfs(raw, implemented = STRUCTURAL_UFS_IMPLEMENTED) {
+  const trimmed = String(raw || '').trim();
+  if (!trimmed) {
+    return [];
+  }
+  const tokens = trimmed
+    .split(/[,\s]+/)
+    .map((item) => item.trim().toUpperCase())
+    .filter(Boolean);
+  if (!tokens.length) {
+    fail('PLAYWRIGHT_UFS is empty after parsing.');
+  }
+  const unique = [...new Set(tokens)];
+  for (const uf of unique) {
+    if (!/^[A-Z]{2}$/.test(uf)) {
+      fail(`UF not authorized: ${uf}`);
+    }
+    if (!implemented.includes(uf)) {
+      fail(
+        `UF ${uf} is not in the implemented structural allowlist (${implemented.join(',')}). Registration specs cannot be selected this way.`,
+      );
+    }
+  }
+  return unique;
 }
 
 if (!['mocked', 'live-readonly'].includes(mode)) {
@@ -37,21 +69,26 @@ if (mode === 'live-readonly') {
   }
 }
 
+const selectedUfs = parseStructuralUfs(ufsRaw);
+if (selectedUfs.length && suite !== 'structural') {
+  fail('PLAYWRIGHT_UFS is only valid with suite=structural.');
+}
+
 const project = 'vbconnection-newfront';
+const grepTag = mode === 'live-readonly' ? '@live-readonly' : '@mocked';
 let args = `--project=${project}`;
 
-if (mode === 'mocked') {
-  if (suite === 'smoke') {
-    args += ' --grep @smoke --grep-invert @live-readonly';
-  } else if (suite === 'regression') {
-    args += ' --grep-invert @live-readonly';
-  } else {
-    args += ' e2e/contratos/page02 --grep @mocked';
-  }
-} else if (suite === 'regression') {
+if (mode === 'mocked' && suite === 'smoke') {
+  args += ' --grep @smoke --grep-invert @live-readonly';
+} else if (mode === 'mocked' && suite === 'regression') {
+  args += ' --grep-invert @live-readonly';
+} else if (suite === 'regression' && mode === 'live-readonly') {
   args += ' --grep @live-readonly';
 } else {
-  args += ' e2e/contratos/page02 --grep @live-readonly';
+  const files = (selectedUfs.length ? selectedUfs : STRUCTURAL_UFS_IMPLEMENTED).map(
+    (uf) => `e2e/contratos/page02/${uf.toLowerCase()}-estrutural.spec.ts`,
+  );
+  args += ` ${files.join(' ')} --grep ${grepTag}`;
 }
 
 console.log(`project=${project}`);
@@ -59,8 +96,11 @@ console.log(`args=${args}`);
 console.log(`mode=${mode}`);
 console.log(`suite=${suite}`);
 console.log(`target=${target}`);
+console.log(`ufs=${selectedUfs.join(',') || STRUCTURAL_UFS_IMPLEMENTED.join(',')}`);
+console.log(`lote=${selectedUfs.join(',') === 'AC,AP,DF,ES' ? '01' : selectedUfs.join(',') === 'BA,CE,RO' ? 'baseline' : 'structural'}`);
 
 if (process.env.GITHUB_OUTPUT) {
+  const ufsOut = selectedUfs.join(',') || STRUCTURAL_UFS_IMPLEMENTED.join(',');
   appendFileSync(
     process.env.GITHUB_OUTPUT,
     [
@@ -68,6 +108,7 @@ if (process.env.GITHUB_OUTPUT) {
       `mode=${mode}`,
       `suite=${suite}`,
       `target=${target}`,
+      `ufs=${ufsOut}`,
       'args<<EOF',
       args,
       'EOF',

@@ -133,4 +133,35 @@ const mockedOk = runSelect({
 assert.equal(mockedOk.status, 0, mockedOk.stderr || mockedOk.stdout);
 assert.match(mockedOk.stdout, /grep-invert @live-readonly/);
 
+const batch1 = runSelect({
+  PLAYWRIGHT_MODE: 'mocked',
+  GITHUB_EVENT_NAME: 'workflow_dispatch',
+  SUITE: 'structural',
+  PLAYWRIGHT_TARGET: 'newfront',
+  PLAYWRIGHT_UFS: 'AC,AP,DF,ES',
+});
+assert.equal(batch1.status, 0, batch1.stderr || batch1.stdout);
+assert.match(batch1.stdout, /ac-estrutural\.spec\.ts/);
+assert.match(batch1.stdout, /es-estrutural\.spec\.ts/);
+assert.doesNotMatch(batch1.stdout, /ba-estrutural\.spec\.ts/);
+assert.doesNotMatch(batch1.stdout, /registro\/ac\.spec\.ts/);
+
+const unknownUf = runSelect({
+  PLAYWRIGHT_MODE: 'mocked',
+  GITHUB_EVENT_NAME: 'workflow_dispatch',
+  SUITE: 'structural',
+  PLAYWRIGHT_TARGET: 'newfront',
+  PLAYWRIGHT_UFS: 'SE',
+});
+assert.equal(unknownUf.status, 2, unknownUf.stderr || unknownUf.stdout);
+
+const ufsOnRegression = runSelect({
+  PLAYWRIGHT_MODE: 'mocked',
+  GITHUB_EVENT_NAME: 'workflow_dispatch',
+  SUITE: 'regression',
+  PLAYWRIGHT_TARGET: 'newfront',
+  PLAYWRIGHT_UFS: 'AC',
+});
+assert.equal(ufsOnRegression.status, 2, ufsOnRegression.stderr || ufsOnRegression.stdout);
+
 console.log('validate-pipeline-local: canários locais aprovados');

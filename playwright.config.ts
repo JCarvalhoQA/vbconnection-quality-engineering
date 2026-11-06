@@ -34,9 +34,9 @@ export default defineConfig({
   use: {
     locale: 'pt-BR',
     timezoneId: 'America/Sao_Paulo',
-    trace: 'retain-on-failure',
+    trace: liveReadonly ? 'off' : 'retain-on-failure',
     screenshot: 'only-on-failure',
-    video: 'retain-on-failure',
+    video: liveReadonly ? 'off' : 'retain-on-failure',
     serviceWorkers: 'block',
   },
   projects: [

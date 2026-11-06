@@ -28,7 +28,8 @@ test.describe('PAGE-02 BA estrutura visual @contrato @page02 @ba @mocked', () =>
     await seedAuthenticatedSession(page);
   });
 
-  test('carrega o formulário, inspeciona veículo e descarta a linha sem persistir', async ({ page }) => {
+  test('carrega BA, inspeciona veículo e descarta a linha sem persistir', async ({ page }) => {
+    test.info().annotations.push({ type: 'uf', description: 'BA' });
     test.info().annotations.push({ type: 'origem-ui', description: 'LIVE_FIELD_INVENTORY.veiculo.zeroKm' });
     test.info().annotations.push({ type: 'origem-java', description: 'fixtures/matriz/BA.json INDICA_NOVO_USADO' });
 
@@ -52,10 +53,12 @@ test.describe('PAGE-02 BA estrutura visual @contrato @page02 @ba @live-readonly'
 
   test.beforeEach(async ({ page }) => {
     test.info().annotations.push({ type: 'mode', description: 'live-readonly' });
+    test.info().annotations.push({ type: 'uf', description: 'BA' });
+    test.info().annotations.push({ type: 'lote', description: 'baseline' });
     await installPersistGuard(page, { mode: 'live-readonly' });
   });
 
-  test('valida casca, linha de veículo, zero km e descarte sem Registrar', async ({ page }) => {
+  test('valida casca BA, linha de veículo, zero km e descarte sem Registrar', async ({ page }) => {
     const ui = perfilVisualBa();
     const log = rastrearMutacoes(page);
     const capture = await autenticarMasterLive(page);

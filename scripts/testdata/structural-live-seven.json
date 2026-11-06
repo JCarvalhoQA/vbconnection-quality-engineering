@@ -1,0 +1,133 @@
+{
+  "stats": {
+    "startTime": "2026-11-06T15:40:00.000Z",
+    "duration": 122000,
+    "expected": 7,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "suites": [
+    {
+      "title": "PAGE-02 BA estrutura visual @contrato @page02 @ba @live-readonly",
+      "file": "e2e/contratos/page02/ba-estrutural.spec.ts",
+      "specs": [
+        {
+          "title": "valida casca, linha de veículo, zero km e descarte sem Registrar",
+          "ok": true,
+          "file": "e2e/contratos/page02/ba-estrutural.spec.ts",
+          "line": 58,
+          "tests": [
+            {
+              "projectName": "vbconnection-newfront",
+              "status": "expected",
+              "results": [{ "status": "passed", "duration": 16800 }]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "PAGE-02 AC estrutura visual @contrato @page02 @ac @live-readonly",
+      "file": "e2e/contratos/page02/ac-estrutural.spec.ts",
+      "specs": [
+        {
+          "title": "valida casca AC, veículo e descarte sem Registrar",
+          "ok": true,
+          "file": "e2e/contratos/page02/ac-estrutural.spec.ts",
+          "tests": [
+            {
+              "status": "expected",
+              "results": [{ "status": "passed", "duration": 15000 }]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "PAGE-02 AP estrutura visual @contrato @page02 @ap @live-readonly",
+      "file": "e2e/contratos/page02/ap-estrutural.spec.ts",
+      "specs": [
+        {
+          "title": "valida casca AP, veículo e descarte sem Registrar",
+          "ok": true,
+          "file": "e2e/contratos/page02/ap-estrutural.spec.ts",
+          "tests": [
+            {
+              "status": "expected",
+              "results": [{ "status": "passed", "duration": 15000 }]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "PAGE-02 CE estrutura visual @contrato @page02 @ce @live-readonly",
+      "file": "e2e/contratos/page02/ce-estrutural.spec.ts",
+      "specs": [
+        {
+          "title": "valida casca CE, TG, juros, veículo e descarte sem Registrar",
+          "ok": true,
+          "file": "e2e/contratos/page02/ce-estrutural.spec.ts",
+          "tests": [
+            {
+              "status": "expected",
+              "results": [{ "status": "passed", "duration": 15000 }]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "PAGE-02 DF estrutura visual @contrato @page02 @df @live-readonly",
+      "file": "e2e/contratos/page02/df-estrutural.spec.ts",
+      "specs": [
+        {
+          "title": "valida casca DF, veículo e descarte sem Registrar",
+          "ok": true,
+          "file": "e2e/contratos/page02/df-estrutural.spec.ts",
+          "tests": [
+            {
+              "status": "expected",
+              "results": [{ "status": "passed", "duration": 15000 }]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "PAGE-02 ES estrutura visual @contrato @page02 @es @live-readonly",
+      "file": "e2e/contratos/page02/es-estrutural.spec.ts",
+      "specs": [
+        {
+          "title": "valida casca ES, veículo e descarte sem Registrar",
+          "ok": true,
+          "file": "e2e/contratos/page02/es-estrutural.spec.ts",
+          "tests": [
+            {
+              "status": "expected",
+              "results": [{ "status": "passed", "duration": 15000 }]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "PAGE-02 RO estrutura visual @contrato @page02 @ro @live-readonly",
+      "file": "e2e/contratos/page02/ro-estrutural.spec.ts",
+      "specs": [
+        {
+          "title": "valida casca RO, ausência de TG, veículo e descarte sem Registrar",
+          "ok": true,
+          "file": "e2e/contratos/page02/ro-estrutural.spec.ts",
+          "tests": [
+            {
+              "status": "expected",
+              "results": [{ "status": "passed", "duration": 15000 }]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

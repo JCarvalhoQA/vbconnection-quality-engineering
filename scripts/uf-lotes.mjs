@@ -16,6 +16,10 @@ export const STRUCTURAL_UFS_IMPLEMENTED = [
   'RJ',
   'RN',
   'RO',
+  'RR',
+  'RS',
+  'SC',
+  'SP',
 ];
 
 export const LOTE_MEMBERS = {

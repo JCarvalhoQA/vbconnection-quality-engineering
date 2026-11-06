@@ -6,7 +6,9 @@ import { obterEnderecoPorCep, obterEnderecoPorUf } from '../factories/massaDados
 import { CONTRATO_AGENTE_PILOTO } from '../fixtures/contrato';
 import {
   camposDaSecao,
+  hasMatrizFixture,
   loadMatrizFixture,
+  MatrizFixture,
   MatrizIndisponivelError,
   SECAO_ADITIVO,
   SECAO_AGENTE,
@@ -18,6 +20,8 @@ import {
   SECAO_VEICULO,
 } from './matrizLoader';
 import { installPersistGuard } from './persistGuard';
+import { hasUfUiProfile, loadUfUiProfile } from './ufUiProfile';
+import { formMockFromUiProfile } from './uiFormMock';
 
 const corsHeaders = {
   'access-control-allow-origin': '*',
@@ -129,13 +133,23 @@ export async function mockContratoCadastroApis(page: Page, uf: string): Promise<
   return protocolo;
 }
 
+function formPayloadForUf(uf: string): Pick<MatrizFixture, 'secoes' | 'campos'> {
+  if (hasMatrizFixture(uf)) {
+    return loadMatrizFixture(uf);
+  }
+  if (hasUfUiProfile(uf) && loadUfUiProfile(uf).formularioDisponivel) {
+    return formMockFromUiProfile(loadUfUiProfile(uf));
+  }
+  throw new MatrizIndisponivelError(uf);
+}
+
 export async function mockContratoCadastroApisOnly(page: Page, uf: string): Promise<string> {
   if (uf === 'SE') {
     throw new MatrizIndisponivelError('SE');
   }
 
   const destino = destinoMock(uf);
-  const matriz = loadMatrizFixture(uf);
+  const matriz = formPayloadForUf(uf);
   const protocolo = protocoloRegistro(uf);
   const destinos = destinosComboMock();
 

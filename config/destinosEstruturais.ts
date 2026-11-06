@@ -1,6 +1,7 @@
 /**
- * Destinos usados só na inspeção estrutural PAGE-02.
- * Não entram em `DetranUf` / `DETRAN_UFS` — a suíte de registro permanece sem CE/RO.
+ * Destinos da inspeção estrutural PAGE-02.
+ * A suíte de registro (`DetranUf`) não ganha UFs novas por este arquivo.
+ * CE/RO/MA continuam fora do registro persistente.
  */
 export interface DestinoEstrutural {
   readonly uf: string;
@@ -9,14 +10,31 @@ export interface DestinoEstrutural {
   readonly razaoSocial: string;
 }
 
-export const UFS_ESTRUTURAIS = ['BA', 'CE', 'RO'] as const;
+/** Specs estruturais já implementadas (baseline + lote 1). */
+export const UFS_ESTRUTURAIS = ['BA', 'CE', 'RO', 'AC', 'AP', 'DF', 'ES'] as const;
 export type UfEstrutural = (typeof UFS_ESTRUTURAIS)[number];
 
+export const LOTE_BASELINE = ['BA', 'CE', 'RO'] as const;
+export const LOTE_01 = ['AC', 'AP', 'DF', 'ES'] as const;
+export const LOTE_02 = ['MG', 'MS', 'MT', 'PB'] as const;
+export const LOTE_03 = ['PE', 'PR', 'RJ', 'RN'] as const;
+export const LOTE_04 = ['RR', 'RS', 'SC', 'SP'] as const;
+export const LOTE_05 = ['MA', 'TO'] as const;
+export const LOTE_EXCECAO = ['SE'] as const;
+
 export const DESTINOS_ESTRUTURAIS: Record<UfEstrutural, DestinoEstrutural> = {
-  BA: { uf: 'BA', id: 14, nomeFantasia: 'DETRAN-BA', razaoSocial: 'DETRAN-BA' },
-  CE: { uf: 'CE', id: 236, nomeFantasia: 'DETRAN-CE', razaoSocial: 'DETRAN-CE' },
-  RO: { uf: 'RO', id: 234, nomeFantasia: 'DETRAN-RO', razaoSocial: 'DETRAN-RO' },
+  BA: destino('BA', 14),
+  CE: destino('CE', 236),
+  RO: destino('RO', 234),
+  AC: destino('AC', 17),
+  AP: destino('AP', 225),
+  DF: destino('DF', 232),
+  ES: destino('ES', 230),
 };
+
+function destino(uf: UfEstrutural, id: number): DestinoEstrutural {
+  return { uf, id, nomeFantasia: `DETRAN-${uf}`, razaoSocial: `DETRAN-${uf}` };
+}
 
 export function isUfEstrutural(uf: string): uf is UfEstrutural {
   return (UFS_ESTRUTURAIS as readonly string[]).includes(uf);
@@ -24,11 +42,36 @@ export function isUfEstrutural(uf: string): uf is UfEstrutural {
 
 export function destinoEstrutural(uf: string): DestinoEstrutural {
   if (!isUfEstrutural(uf)) {
-    throw new Error(`${uf}: destino estrutural não mapeado (apenas BA/CE/RO).`);
+    throw new Error(`${uf}: destino estrutural não implementado (lote atual: ${UFS_ESTRUTURAIS.join(',')}).`);
   }
   return DESTINOS_ESTRUTURAIS[uf];
 }
 
 export function destinosEstruturaisCombo(): DestinoEstrutural[] {
   return UFS_ESTRUTURAIS.map((uf) => DESTINOS_ESTRUTURAIS[uf]);
+}
+
+export function loteEstruturalDe(uf: string): string {
+  if ((LOTE_BASELINE as readonly string[]).includes(uf)) {
+    return 'baseline';
+  }
+  if ((LOTE_01 as readonly string[]).includes(uf)) {
+    return '01';
+  }
+  if ((LOTE_02 as readonly string[]).includes(uf)) {
+    return '02';
+  }
+  if ((LOTE_03 as readonly string[]).includes(uf)) {
+    return '03';
+  }
+  if ((LOTE_04 as readonly string[]).includes(uf)) {
+    return '04';
+  }
+  if ((LOTE_05 as readonly string[]).includes(uf)) {
+    return '05';
+  }
+  if ((LOTE_EXCECAO as readonly string[]).includes(uf)) {
+    return 'excecao';
+  }
+  return 'nao-planejado';
 }

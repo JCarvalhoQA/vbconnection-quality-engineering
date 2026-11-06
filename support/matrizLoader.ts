@@ -79,6 +79,6 @@ export function secaoVisivel(fixture: MatrizFixture, secao: string): boolean {
   return Boolean(fixture.secoes[secao]);
 }
 
-export function camposDaSecao(fixture: MatrizFixture, secao: string): Record<string, CampoMatriz> {
+export function camposDaSecao(fixture: Pick<MatrizFixture, 'campos'>, secao: string): Record<string, CampoMatriz> {
   return fixture.campos[secao] ?? {};
 }

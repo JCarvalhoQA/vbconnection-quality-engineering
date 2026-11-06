@@ -146,19 +146,35 @@ export async function assertCampoVisual(
   await expect(marca).toHaveCount(0);
 }
 
-export async function assertEspecificosCe(page: Page, contrato: ContratoPage, profile: UfUiProfile): Promise<void> {
-  const ids = new Set([
-    'taxaJurosMes',
-    'dataPagamento',
-    'epocaPagamento',
-    'ufLocalPagamento',
-    'cidadeLocalPagamento',
-    'devedorCelular',
-  ]);
+const CAMPOS_PAGAMENTO_JUROS = new Set([
+  'taxaJurosMes',
+  'dataPagamento',
+  'epocaPagamento',
+  'ufLocalPagamento',
+  'cidadeLocalPagamento',
+  'devedorCelular',
+]);
+
+export async function assertCamposInventarioPorIds(
+  page: Page,
+  contrato: ContratoPage,
+  profile: UfUiProfile,
+  ids: ReadonlySet<string>,
+): Promise<void> {
   for (const field of profile.fields.filter((item) => item.id && ids.has(item.id))) {
     await assertCampoUnicoVisivel(page, field);
     await assertCampoVisual(contrato, field);
   }
+}
+
+export async function assertEspecificosCe(page: Page, contrato: ContratoPage, profile: UfUiProfile): Promise<void> {
+  await assertCamposInventarioPorIds(page, contrato, profile, CAMPOS_PAGAMENTO_JUROS);
+}
+
+export async function assertEspecificosMa(page: Page, contrato: ContratoPage, profile: UfUiProfile): Promise<void> {
+  await assertCamposInventarioPorIds(page, contrato, profile, CAMPOS_PAGAMENTO_JUROS);
+  expect(profile.terceiroGarantidor.visivel).toBe(true);
+  expect(profile.veiculo.camposZeroKmSim.some((campo) => campo.formControl === 'tipoEspecie')).toBe(true);
 }
 
 export async function assertEspecificosRo(page: Page, contrato: ContratoPage, profile: UfUiProfile): Promise<void> {
@@ -177,6 +193,9 @@ export async function assertCascaPorInventario(page: Page, contrato: ContratoPag
   await assertCredorDocumentos(page, profile);
   if (profile.uf === 'CE') {
     await assertEspecificosCe(page, contrato, profile);
+  }
+  if (profile.uf === 'MA') {
+    await assertEspecificosMa(page, contrato, profile);
   }
   if (profile.uf === 'RO') {
     await assertEspecificosRo(page, contrato, profile);

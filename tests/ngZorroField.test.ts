@@ -48,6 +48,20 @@ test.describe('Locators NG-ZORRO do inventário live @mocked', () => {
     expect(loadUfUiProfile('RS').fields.find((field) => field.id === 'dataCadastro')?.tag).toBe('nz-date-picker');
   });
 
+  test('lote 5: MA usa host NG-ZORRO em terceiroUf e dataPagamento; TO não tem TG', () => {
+    const ma = loadUfUiProfile('MA');
+    const terceiroUf = ma.fields.find((field) => field.id === 'terceiroUf');
+    expect(terceiroUf?.tag).toBe('nz-select');
+    expect(ngZorroHostSelector(terceiroUf!.tag, terceiroUf!.id!)).toBe('nz-select#terceiroUf');
+    const pagamento = ma.fields.find((field) => field.id === 'dataPagamento');
+    expect(pagamento?.tag).toBe('nz-date-picker');
+    expect(ngZorroHostSelector(pagamento!.tag, pagamento!.id!)).toBe('nz-date-picker#dataPagamento');
+    const to = loadUfUiProfile('TO');
+    expect(to.fields.some((field) => field.id === 'terceiroUf')).toBe(false);
+    expect(to.fields.find((field) => field.id === 'dataContrato')?.tag).toBe('nz-date-picker');
+    expect(ngZorroHostSelector('nz-date-picker', 'dataContrato')).toBe('nz-date-picker#dataContrato');
+  });
+
   test('dataPagamento de CE também é host de date-picker', () => {
     const ce = loadUfUiProfile('CE');
     const data = ce.fields.find((field) => field.id === 'dataPagamento');

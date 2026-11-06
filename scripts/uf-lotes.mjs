@@ -7,6 +7,7 @@ export const STRUCTURAL_UFS_IMPLEMENTED = [
   'CE',
   'DF',
   'ES',
+  'MA',
   'MG',
   'MS',
   'MT',
@@ -20,6 +21,7 @@ export const STRUCTURAL_UFS_IMPLEMENTED = [
   'RS',
   'SC',
   'SP',
+  'TO',
 ];
 
 export const LOTE_MEMBERS = {

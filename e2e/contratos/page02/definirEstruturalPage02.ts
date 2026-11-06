@@ -36,13 +36,17 @@ export function definirTestesEstruturaisPage02(uf: string): void {
     });
 
     test(`carrega ${uf}, inspeciona veículo e descarta a linha sem persistir`, async ({ page }) => {
+      const ui = perfilVisualUf(uf);
       test.info().annotations.push({ type: 'uf', description: uf });
       test.info().annotations.push({ type: 'origem-ui', description: `LIVE_FIELD_INVENTORY.${uf}` });
+      test.info().annotations.push({
+        type: 'origem-java',
+        description: ui.matrizJava ? 'fixtures/matriz' : 'ausente',
+      });
       test.info().annotations.push({ type: 'lote', description: loteEstruturalDe(uf) });
 
       const contrato = new ContratoPage(page);
       const log = rastrearMutacoes(page);
-      const ui = perfilVisualUf(uf);
 
       await contrato.acessar();
       await contrato.selecionarDestino(destino.nomeFantasia);

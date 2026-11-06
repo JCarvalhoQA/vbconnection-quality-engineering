@@ -29,7 +29,14 @@ export async function autenticarMasterLive(page: Page): Promise<AuthCapture> {
   if (tokensResumo.autenticaEmDuasEtapas || tokensResumo.passwordExpirado || !tokensResumo.hasToken) {
     throw new Error(`Live-readonly bloqueado: tokens ${JSON.stringify(tokensResumo)}`);
   }
-  await expect.poll(() => capture.prefs2?.status, { timeout: 30_000 }).toBe(200);
+  try {
+    await expect.poll(() => capture.prefs2?.status, { timeout: 30_000 }).toBe(200);
+  } catch {
+    const historico = (capture.prefs2Statuses ?? []).join(',') || 'vazio';
+    throw new Error(
+      `Live-readonly: prefs2 não comprovou sessão após tokens 200 (status=${capture.prefs2?.status ?? 'ausente'}, historico=${historico}). HTTP 401 não é sucesso.`,
+    );
+  }
   assertMasterProfile(capture.prefs2?.body);
   await home.expectLoaded();
   return capture;

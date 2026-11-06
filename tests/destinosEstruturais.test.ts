@@ -8,12 +8,13 @@ import {
   LOTE_02,
   LOTE_03,
   LOTE_04,
+  LOTE_05,
   loteEstruturalDe,
   UFS_ESTRUTURAIS,
 } from '../config/destinosEstruturais';
 
 test.describe('Destinos estruturais @mocked', () => {
-  test('baseline e lotes 1–4 existem para inspeção; CE/RO ficam fora do registro', () => {
+  test('baseline e lotes 1–5 existem para inspeção; CE/RO/MA ficam fora do registro', () => {
     expect(UFS_ESTRUTURAIS).toEqual([
       'BA',
       'CE',
@@ -34,6 +35,8 @@ test.describe('Destinos estruturais @mocked', () => {
       'RS',
       'SC',
       'SP',
+      'MA',
+      'TO',
     ]);
     expect(DESTINOS_ESTRUTURAIS.CE.id).toBe(236);
     expect(DESTINOS_ESTRUTURAIS.RO.id).toBe(234);
@@ -53,22 +56,31 @@ test.describe('Destinos estruturais @mocked', () => {
     expect(DESTINOS_ESTRUTURAIS.RS.id).toBe(231);
     expect(DESTINOS_ESTRUTURAIS.SC.id).toBe(4);
     expect(DESTINOS_ESTRUTURAIS.SP.id).toBe(1);
+    expect(DESTINOS_ESTRUTURAIS.MA.id).toBe(238);
+    expect(DESTINOS_ESTRUTURAIS.TO.id).toBe(122);
     expect(DESTINOS_ESTRUTURAIS.BA.nomeFantasia).toBe('DETRAN-BA');
     expect(DETRAN_UFS).not.toContain('CE');
     expect(DETRAN_UFS).not.toContain('RO');
+    expect(DETRAN_UFS).not.toContain('MA');
     expect(DETRAN_UFS).toContain('BA');
     expect(DETRAN_UFS).toContain('PE');
-    expect(destinosEstruturaisCombo()).toHaveLength(19);
+    expect(DETRAN_UFS).toContain('TO');
+    expect(destinosEstruturaisCombo()).toHaveLength(21);
     expect(destinoEstrutural('RN').nomeFantasia).toBe('DETRAN-RN');
     expect(destinoEstrutural('SP').nomeFantasia).toBe('DETRAN-SP');
+    expect(destinoEstrutural('MA').nomeFantasia).toBe('DETRAN-MA');
+    expect(destinoEstrutural('TO').nomeFantasia).toBe('DETRAN-TO');
     expect([...LOTE_01]).toEqual(['AC', 'AP', 'DF', 'ES']);
     expect([...LOTE_02]).toEqual(['MG', 'MS', 'MT', 'PB']);
     expect([...LOTE_03]).toEqual(['PE', 'PR', 'RJ', 'RN']);
     expect([...LOTE_04]).toEqual(['RR', 'RS', 'SC', 'SP']);
+    expect([...LOTE_05]).toEqual(['MA', 'TO']);
     expect(loteEstruturalDe('AC')).toBe('01');
     expect(loteEstruturalDe('MG')).toBe('02');
     expect(loteEstruturalDe('PR')).toBe('03');
     expect(loteEstruturalDe('SC')).toBe('04');
+    expect(loteEstruturalDe('MA')).toBe('05');
+    expect(loteEstruturalDe('TO')).toBe('05');
     expect(loteEstruturalDe('BA')).toBe('baseline');
     expect(loteEstruturalDe('SE')).toBe('excecao');
   });

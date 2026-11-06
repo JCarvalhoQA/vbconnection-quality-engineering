@@ -106,6 +106,44 @@ test.describe('Perfil visual de UF @mocked', () => {
     expect(corRj?.requiredVisual).toBe(true);
   });
 
+  test('lote 5 MA UI sem Java com TG; TO Java sem TG', () => {
+    const ma = loadUfUiProfile('MA');
+    expect(ma.formularioDisponivel).toBe(true);
+    expect(ma.matrizJava).toBe(false);
+    expect(hasMatrizFixture('MA')).toBe(false);
+    expect(ma.idCombo).toBe(238);
+    expect(ma.fieldCount).toBe(68);
+    expect(ma.requiredVisualCount).toBe(25);
+    expect(ma.terceiroGarantidor.visivel).toBe(true);
+    expect(ma.terceiroGarantidor.campoCount).toBe(12);
+    expect(ma.terceiroGarantidor.campos).toHaveLength(12);
+    expect(ma.terceiroGarantidor.campos.every((campo) => campo.requiredVisual === false)).toBe(true);
+    expect(ma.headings).toContain('Terceiro garantidor');
+    expect(ma.veiculo.novoUsado.visivel).toBe(false);
+    expect(ma.veiculo.zeroKm.default).toBe('Sim');
+    expect(ma.veiculo.camposZeroKmSim.some((campo) => campo.formControl === 'tipoEspecie')).toBe(true);
+    expect(ma.credor).toBe(true);
+    expect(ma.documentos).toBe(true);
+    expect(ma.fields.some((field) => field.id === 'dataPagamento' && field.requiredVisual)).toBe(true);
+    expect(ma.fields.some((field) => field.id === 'ufLocalPagamento' && field.requiredVisual)).toBe(true);
+
+    const to = loadUfUiProfile('TO');
+    expect(to.formularioDisponivel).toBe(true);
+    expect(to.matrizJava).toBe(true);
+    expect(hasMatrizFixture('TO')).toBe(true);
+    expect(to.idCombo).toBe(122);
+    expect(to.fieldCount).toBe(48);
+    expect(to.requiredVisualCount).toBe(16);
+    expect(to.terceiroGarantidor.visivel).toBe(false);
+    expect(to.veiculo.novoUsado.visivel).toBe(false);
+    expect(to.veiculo.zeroKm.default).toBe('Sim');
+    expect(to.veiculo.camposZeroKmSim.some((campo) => campo.formControl === 'tipoEspecie')).toBe(false);
+    expect(to.credor).toBe(true);
+    expect(to.documentos).toBe(true);
+    expect(secaoVisivel(loadMatrizFixture('TO'), SECAO_TERCEIRO_GARANTIDOR)).toBe(false);
+    expect(campoObrigatorio(loadMatrizFixture('TO'), SECAO_VEICULO, 'INDICA_NOVO_USADO')).toBe(false);
+  });
+
   test('lote 4 RR/RS/SC/SP sem TG e sem Novo/usado na UI live', () => {
     for (const uf of ['RR', 'RS', 'SC', 'SP'] as const) {
       const profile = loadUfUiProfile(uf);

@@ -1,5 +1,10 @@
 import { test, expect } from '@playwright/test';
-import { extractPerfil, requireMasterCredentials, sanitizeEvidenceText } from '../support/liveInspect';
+import {
+  extractPerfil,
+  requireMasterCredentials,
+  sanitizeEvidenceText,
+  shouldAssignPrefs2Capture,
+} from '../support/liveInspect';
 
 test.describe('Gate 0 liveInspect sanitizer @mocked', () => {
   test('remove token, e-mail e CPF do dump', () => {
@@ -9,6 +14,13 @@ test.describe('Gate 0 liveInspect sanitizer @mocked', () => {
     expect(clean).not.toContain('qa@vbtech.info');
     expect(clean).not.toContain('529.982.247-25');
     expect(clean).toContain('[REDACTED]');
+  });
+
+  test('prefs2 401 pré-token não vira evidência de sessão', () => {
+    expect(shouldAssignPrefs2Capture(undefined, 401)).toBe(false);
+    expect(shouldAssignPrefs2Capture(undefined, 200)).toBe(true);
+    expect(shouldAssignPrefs2Capture(200, 401)).toBe(true);
+    expect(shouldAssignPrefs2Capture(200, 200)).toBe(true);
   });
 
   test('extractPerfil lê prefs2.perfil.perfil', () => {

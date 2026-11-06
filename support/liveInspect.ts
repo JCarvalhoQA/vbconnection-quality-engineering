@@ -99,7 +99,20 @@ export function summarizeAuthBody(body: unknown): Record<string, unknown> {
 export interface AuthCapture {
   tokens?: { status: number; url: string; body: unknown };
   prefs2?: { status: number; url: string; body: unknown };
+  prefs2Statuses?: number[];
   destinos?: unknown;
+}
+
+/**
+ * Prefs2 401 antes do POST /auth/tokens é sonda anônima da SPA — não prova sessão.
+ * Depois de tokens 200, qualquer prefs2 (200 ou 401) é evidência da autenticação atual.
+ * HTTP 401 nunca é tratado como sucesso pelo caller.
+ */
+export function shouldAssignPrefs2Capture(tokensStatus: number | undefined, prefsStatus: number): boolean {
+  if (tokensStatus === 200) {
+    return true;
+  }
+  return prefsStatus !== 401;
 }
 
 /**
@@ -130,7 +143,10 @@ export async function installAuthCapture(page: Page, capture: AuthCapture): Prom
       capture.tokens = record;
     }
     if (/\/auth\/prefs2/i.test(request.url()) && request.method() === 'GET') {
-      capture.prefs2 = record;
+      capture.prefs2Statuses = [...(capture.prefs2Statuses ?? []), record.status];
+      if (shouldAssignPrefs2Capture(capture.tokens?.status, record.status)) {
+        capture.prefs2 = record;
+      }
     }
 
     const headers = { ...response.headers() };

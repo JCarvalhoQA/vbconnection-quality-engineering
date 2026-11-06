@@ -38,7 +38,7 @@ on:
           - newfront
           - hmg
       ufs:
-        description: Optional PAGE-02 UFs (e.g. MG,MS,MT,PB or BA,CE,RO,AC,AP,DF,ES). Empty = all implemented structural specs. Ignored unless suite=structural.
+        description: Optional PAGE-02 UFs (e.g. PE,PR,RJ,RN or AC,AP,BA,CE,DF,ES,MG,MS,MT,PB,RO). Empty = all implemented structural specs. Ignored unless suite=structural.
         type: string
         required: false
         default: ''

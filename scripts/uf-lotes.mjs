@@ -11,6 +11,10 @@ export const STRUCTURAL_UFS_IMPLEMENTED = [
   'MS',
   'MT',
   'PB',
+  'PE',
+  'PR',
+  'RJ',
+  'RN',
   'RO',
 ];
 

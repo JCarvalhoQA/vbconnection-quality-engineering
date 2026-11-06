@@ -13,3 +13,5 @@ npx playwright test --project=vbconnection-newfront --grep-invert @live-readonly
 Skipped conhecidos: 2× SE + 1 login recuperação 500.
 
 PAGE-02 estrutural mocked: **15 passed**.
+
+CI equivalente no PR #8: [run 42263506849](https://github.com/JCarvalhoQA/vbconnection-quality-engineering/actions/runs/42263506849) — Mocked SUCCESS; Live readonly SKIPPED. Typecheck, unitários e `matriz:compare` passaram no mesmo job.

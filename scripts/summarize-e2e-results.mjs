@@ -1,14 +1,18 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { describeLotes, formatUfList } from './uf-lotes.mjs';
 
 function readJson() {
   if (!fs.existsSync('test-results/e2e-results.json')) return null;
   return JSON.parse(fs.readFileSync('test-results/e2e-results.json', 'utf8'));
 }
 
-function collectSpecs(suite, acc = []) {
-  for (const spec of suite.specs || []) acc.push(spec);
-  for (const child of suite.suites || []) collectSpecs(child, acc);
+function collectSpecs(suite, acc = [], parentTitles = []) {
+  const titles = parentTitles.concat(suite.title || []).filter(Boolean);
+  for (const spec of suite.specs || []) {
+    acc.push({ ...spec, parentTitles: titles });
+  }
+  for (const child of suite.suites || []) collectSpecs(child, acc, titles);
   return acc;
 }
 
@@ -77,15 +81,126 @@ export function sanitizeReportText(text) {
     .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, '[REDACTED_EMAIL]');
 }
 
-const UF_TOKEN = /\b(AC|AL|AP|AM|BA|CE|DF|ES|GO|MA|MG|MS|MT|PA|PB|PE|PI|PR|RJ|RN|RO|RR|RS|SC|SE|SP|TO)\b/g;
+const UF_TOKEN = /\b(AC|AL|AP|AM|BA|CE|DF|ES|GO|MA|MG|MS|MT|PA|PB|PE|PI|PR|RJ|RN|RO|RR|RS|SC|SE|SP|TO)\b/gi;
+const STRUCTURAL_FILE = /(?:^|[\\/])([a-z]{2})-estrutural\.spec\.ts$/i;
+const KNOWN_UFS = new Set([
+  'AC',
+  'AL',
+  'AP',
+  'AM',
+  'BA',
+  'CE',
+  'DF',
+  'ES',
+  'GO',
+  'MA',
+  'MG',
+  'MS',
+  'MT',
+  'PA',
+  'PB',
+  'PE',
+  'PI',
+  'PR',
+  'RJ',
+  'RN',
+  'RO',
+  'RR',
+  'RS',
+  'SC',
+  'SE',
+  'SP',
+  'TO',
+]);
+
+function addUf(found, value) {
+  const uf = String(value || '').trim().toUpperCase();
+  if (KNOWN_UFS.has(uf)) {
+    found.add(uf);
+  }
+}
 
 export function extractUfsFromSpec(spec) {
-  const annotations = (spec.tests || [])
-    .flatMap((item) => item.annotations || [])
-    .map((item) => item.description || '')
-    .join(' ');
-  const hay = `${spec.title || ''} ${spec.file || ''} ${annotations}`;
-  return [...new Set([...hay.matchAll(UF_TOKEN)].map((match) => match[1]))];
+  const found = new Set();
+  for (const test of spec.tests || []) {
+    for (const annotation of test.annotations || []) {
+      if (String(annotation.type || '').toLowerCase() === 'uf') {
+        addUf(found, annotation.description);
+      }
+    }
+  }
+
+  const file = String(spec.file || spec.location?.file || '').replace(/\\/g, '/');
+  const fileMatch = file.match(STRUCTURAL_FILE);
+  if (fileMatch) {
+    addUf(found, fileMatch[1]);
+  }
+
+  const titleHay = [spec.title, ...(spec.parentTitles || [])].filter(Boolean).join(' ');
+  for (const match of titleHay.matchAll(UF_TOKEN)) {
+    addUf(found, match[1]);
+  }
+
+  return [...found].sort();
+}
+
+function sortedUfs(values) {
+  const list = values instanceof Set ? [...values] : Array.isArray(values) ? values : [];
+  return [...new Set(list.map((item) => String(item || '').toUpperCase()).filter(Boolean))].sort();
+}
+
+export function parseUfEnvList(raw) {
+  const trimmed = String(raw || '').trim();
+  if (!trimmed || trimmed === 'n/d') {
+    return [];
+  }
+  return sortedUfs(trimmed.split(/[,\s]+/));
+}
+
+export function classifyUfResults(specs, selectedUfs = []) {
+  const passed = new Set();
+  const failed = new Set();
+  const skipped = new Set();
+  const flaky = new Set();
+  const interrupted = new Set();
+  const executed = new Set();
+
+  for (const spec of specs) {
+    const classified = classifySpec(spec);
+    const ufs = extractUfsFromSpec(spec);
+    for (const uf of ufs) {
+      if (classified.bucket === 'passed') {
+        passed.add(uf);
+        executed.add(uf);
+      } else if (classified.bucket === 'failed') {
+        failed.add(uf);
+        executed.add(uf);
+      } else if (classified.bucket === 'flaky') {
+        flaky.add(uf);
+        executed.add(uf);
+      } else if (classified.bucket === 'skipped') {
+        skipped.add(uf);
+      } else {
+        interrupted.add(uf);
+      }
+    }
+  }
+
+  const selected = sortedUfs(selectedUfs);
+  const notRun = selected.filter(
+    (uf) => !executed.has(uf) && !skipped.has(uf) && !interrupted.has(uf),
+  );
+
+  return {
+    selected,
+    executed: sortedUfs(executed),
+    passed: sortedUfs(passed),
+    failed: sortedUfs(failed),
+    skipped: sortedUfs(skipped),
+    flaky: sortedUfs(flaky),
+    interrupted: sortedUfs(interrupted),
+    notRun,
+  };
 }
 
 export function classifyFailureKind(message = '', spec = {}) {
@@ -171,7 +286,7 @@ function statusLabel(classification) {
   }
 }
 
-export function summarizeReport(json) {
+export function summarizeReport(json, options = {}) {
   const specs = (json?.suites || []).flatMap((suite) => collectSpecs(suite));
   const buckets = { passed: [], failed: [], skipped: [], flaky: [], notRun: [] };
 
@@ -230,7 +345,10 @@ export function summarizeReport(json) {
         message: error.message,
       };
     }),
-    ufs: [...new Set(specs.flatMap((spec) => extractUfsFromSpec(spec)))].sort(),
+    ufs: classifyUfResults(
+      specs,
+      options.selectedUfs ?? parseUfEnvList(process.env.PLAYWRIGHT_SELECTED_UFS),
+    ),
   };
 }
 
@@ -291,9 +409,19 @@ export function renderSummary({ metrics, meta }) {
     '',
     `Lote: ${meta.lote || 'n/d'}`,
     '',
+    `UFs solicitadas: ${meta.ufsSolicitadas || 'n/d'}`,
+    '',
     `UFs selecionadas: ${meta.ufsSelecionadas || 'n/d'}`,
     '',
-    `UFs executadas: ${metrics.ufs?.length ? metrics.ufs.join(', ') : 'n/d'}`,
+    `UFs executadas: ${formatUfList(metrics.ufs?.executed)}`,
+    '',
+    `UFs aprovadas: ${formatUfList(metrics.ufs?.passed)}`,
+    '',
+    `UFs reprovadas: ${formatUfList(metrics.ufs?.failed)}`,
+    '',
+    `UFs ignoradas: ${formatUfList(metrics.ufs?.skipped)}`,
+    '',
+    `UFs não executadas: ${formatUfList(metrics.ufs?.notRun)}`,
     '',
     `Alvo: ${meta.target}`,
     '',
@@ -359,8 +487,25 @@ function main() {
         passRate: 'n/d',
         failures: [],
         flakyDetails: [],
-        ufs: [],
+        ufs: {
+          selected: [],
+          executed: [],
+          passed: [],
+          failed: [],
+          skipped: [],
+          flaky: [],
+          interrupted: [],
+          notRun: [],
+        },
       };
+
+  const requestedUfs = parseUfEnvList(process.env.PLAYWRIGHT_UFS);
+  const selectedUfs = parseUfEnvList(process.env.PLAYWRIGHT_SELECTED_UFS);
+  const loteUfs = selectedUfs.length ? selectedUfs : metrics.ufs?.executed || [];
+  const lote =
+    process.env.PLAYWRIGHT_LOTE && process.env.PLAYWRIGHT_LOTE !== 'n/d'
+      ? process.env.PLAYWRIGHT_LOTE
+      : describeLotes(loteUfs);
 
   const markdown = renderSummary({
     metrics,
@@ -375,8 +520,9 @@ function main() {
       deployId: process.env.DEPLOY_ID || 'não informado',
       mode: process.env.PLAYWRIGHT_MODE || 'mocked',
       suite: process.env.SUITE || 'n/d',
-      lote: process.env.PLAYWRIGHT_UFS === 'AC,AP,DF,ES' ? '01' : process.env.PLAYWRIGHT_UFS === 'BA,CE,RO' ? 'baseline' : process.env.SUITE || 'n/d',
-      ufsSelecionadas: process.env.PLAYWRIGHT_UFS || 'todas as estruturais implementadas',
+      lote,
+      ufsSolicitadas: requestedUfs.length ? formatUfList(requestedUfs) : '(vazio = filtro estrutural padrão, se aplicável)',
+      ufsSelecionadas: selectedUfs.length ? formatUfList(selectedUfs) : formatUfList(metrics.ufs?.selected),
       runId: process.env.GITHUB_RUN_ID || '',
       target:
         process.env.PLAYWRIGHT_TARGET_URL ||

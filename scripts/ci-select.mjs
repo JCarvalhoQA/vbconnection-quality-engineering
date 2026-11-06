@@ -5,15 +5,15 @@
  * and only to implemented PAGE-02 specs — never to persistent registration.
  */
 import { appendFileSync } from 'node:fs';
+import { describeLotes, STRUCTURAL_UFS_IMPLEMENTED } from './uf-lotes.mjs';
+
+export { STRUCTURAL_UFS_IMPLEMENTED };
 
 const mode = process.env.PLAYWRIGHT_MODE || 'mocked';
 const suite = process.env.SUITE || 'smoke';
 const target = process.env.PLAYWRIGHT_TARGET || 'newfront';
 const eventName = process.env.GITHUB_EVENT_NAME || '';
 const ufsRaw = process.env.PLAYWRIGHT_UFS || '';
-
-/** Specs estruturais já existentes. Não inclui lotes futuros nem SE. */
-export const STRUCTURAL_UFS_IMPLEMENTED = ['AC', 'AP', 'BA', 'CE', 'DF', 'ES', 'RO'];
 
 function fail(message) {
   console.error(`::error::${message}`);
@@ -69,14 +69,16 @@ if (mode === 'live-readonly') {
   }
 }
 
-const selectedUfs = parseStructuralUfs(ufsRaw);
-if (selectedUfs.length && suite !== 'structural') {
+const requestedUfs = parseStructuralUfs(ufsRaw);
+if (requestedUfs.length && suite !== 'structural') {
   fail('PLAYWRIGHT_UFS is only valid with suite=structural.');
 }
 
 const project = 'vbconnection-newfront';
 const grepTag = mode === 'live-readonly' ? '@live-readonly' : '@mocked';
+const usesStructuralFiles = suite === 'structural' || (mode === 'live-readonly' && suite === 'smoke');
 let args = `--project=${project}`;
+let selectedUfs = [];
 
 if (mode === 'mocked' && suite === 'smoke') {
   args += ' --grep @smoke --grep-invert @live-readonly';
@@ -84,23 +86,27 @@ if (mode === 'mocked' && suite === 'smoke') {
   args += ' --grep-invert @live-readonly';
 } else if (suite === 'regression' && mode === 'live-readonly') {
   args += ' --grep @live-readonly';
-} else {
-  const files = (selectedUfs.length ? selectedUfs : STRUCTURAL_UFS_IMPLEMENTED).map(
-    (uf) => `e2e/contratos/page02/${uf.toLowerCase()}-estrutural.spec.ts`,
-  );
+} else if (usesStructuralFiles) {
+  selectedUfs = requestedUfs.length ? requestedUfs : [...STRUCTURAL_UFS_IMPLEMENTED];
+  const files = selectedUfs.map((uf) => `e2e/contratos/page02/${uf.toLowerCase()}-estrutural.spec.ts`);
   args += ` ${files.join(' ')} --grep ${grepTag}`;
+} else {
+  fail(`Suite/mode combination is not authorized: mode=${mode} suite=${suite}`);
 }
+
+const lote = selectedUfs.length ? describeLotes(selectedUfs) : 'n/d';
+const ufsOut = selectedUfs.join(',');
 
 console.log(`project=${project}`);
 console.log(`args=${args}`);
 console.log(`mode=${mode}`);
 console.log(`suite=${suite}`);
 console.log(`target=${target}`);
-console.log(`ufs=${selectedUfs.join(',') || STRUCTURAL_UFS_IMPLEMENTED.join(',')}`);
-console.log(`lote=${selectedUfs.join(',') === 'AC,AP,DF,ES' ? '01' : selectedUfs.join(',') === 'BA,CE,RO' ? 'baseline' : 'structural'}`);
+console.log(`requested=${requestedUfs.join(',') || '(empty)'}`);
+console.log(`ufs=${ufsOut}`);
+console.log(`lote=${lote}`);
 
 if (process.env.GITHUB_OUTPUT) {
-  const ufsOut = selectedUfs.join(',') || STRUCTURAL_UFS_IMPLEMENTED.join(',');
   appendFileSync(
     process.env.GITHUB_OUTPUT,
     [
@@ -108,7 +114,9 @@ if (process.env.GITHUB_OUTPUT) {
       `mode=${mode}`,
       `suite=${suite}`,
       `target=${target}`,
+      `requested=${requestedUfs.join(',')}`,
       `ufs=${ufsOut}`,
+      `lote=${lote}`,
       'args<<EOF',
       args,
       'EOF',

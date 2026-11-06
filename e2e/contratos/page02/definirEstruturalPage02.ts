@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { ContratoPage } from '../../../pages/contratoPage';
-import { destinoEstrutural } from '../../../config/destinosEstruturais';
+import { destinoEstrutural, loteEstruturalDe } from '../../../config/destinosEstruturais';
 import { mockLoginApis, seedAuthenticatedSession } from '../../../support/auth';
 import { annotateMockedExecution, mockContratoCadastroApis } from '../../../support/contratoCadastroMocks';
 import { installPersistGuard } from '../../../support/persistGuard';
@@ -38,7 +38,7 @@ export function definirTestesEstruturaisPage02(uf: string): void {
     test(`carrega ${uf}, inspeciona veículo e descarta a linha sem persistir`, async ({ page }) => {
       test.info().annotations.push({ type: 'uf', description: uf });
       test.info().annotations.push({ type: 'origem-ui', description: `LIVE_FIELD_INVENTORY.${uf}` });
-      test.info().annotations.push({ type: 'lote', description: '01' });
+      test.info().annotations.push({ type: 'lote', description: loteEstruturalDe(uf) });
 
       const contrato = new ContratoPage(page);
       const log = rastrearMutacoes(page);
@@ -61,7 +61,7 @@ export function definirTestesEstruturaisPage02(uf: string): void {
     test.beforeEach(async ({ page }) => {
       test.info().annotations.push({ type: 'mode', description: 'live-readonly' });
       test.info().annotations.push({ type: 'uf', description: uf });
-      test.info().annotations.push({ type: 'lote', description: '01' });
+      test.info().annotations.push({ type: 'lote', description: loteEstruturalDe(uf) });
       await installPersistGuard(page, { mode: 'live-readonly' });
     });
 

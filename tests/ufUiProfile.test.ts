@@ -70,6 +70,25 @@ test.describe('Perfil visual de UF @mocked', () => {
     expect(loadUfUiProfile('CE').terceiroGarantidor.campos.every((campo) => campo.requiredVisual === false)).toBe(true);
   });
 
+  test('lote 2 MG/MS/MT/PB sem TG e sem Novo/usado na UI live', () => {
+    for (const uf of ['MG', 'MS', 'MT', 'PB'] as const) {
+      const profile = loadUfUiProfile(uf);
+      expect(profile.formularioDisponivel).toBe(true);
+      expect(profile.matrizJava).toBe(true);
+      expect(profile.terceiroGarantidor.visivel).toBe(false);
+      expect(profile.veiculo.novoUsado.visivel).toBe(false);
+      expect(profile.veiculo.zeroKm.default).toBe('Sim');
+      expect(profile.credor).toBe(true);
+      expect(profile.documentos).toBe(true);
+      expect(hasMatrizFixture(uf)).toBe(true);
+      expect(secaoVisivel(loadMatrizFixture(uf), SECAO_TERCEIRO_GARANTIDOR)).toBe(false);
+    }
+    expect(loadUfUiProfile('MG').idCombo).toBe(9);
+    expect(loadUfUiProfile('MS').idCombo).toBe(226);
+    expect(loadUfUiProfile('MT').idCombo).toBe(233);
+    expect(loadUfUiProfile('PB').idCombo).toBe(13);
+  });
+
   test('lote 1 AC/AP/DF sem TG; ES com TG; todos com formulário live', () => {
     for (const uf of ['AC', 'AP', 'DF'] as const) {
       const profile = loadUfUiProfile(uf);

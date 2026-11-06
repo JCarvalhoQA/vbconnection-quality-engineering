@@ -126,11 +126,17 @@ export async function assertTerceiroGarantidor(page: Page, contrato: ContratoPag
 }
 
 export async function assertCredorDocumentos(page: Page, profile: UfUiProfile): Promise<void> {
+  const credor = page.getByRole('heading', { name: 'Credor', exact: true });
+  const documentos = page.getByRole('heading', { name: 'Documentos', exact: true });
   if (profile.credor) {
-    await expect(page.getByRole('heading', { name: 'Credor', exact: true })).toBeVisible();
+    await expect(credor).toBeVisible();
+  } else {
+    await expect(credor).toHaveCount(0);
   }
   if (profile.documentos) {
-    await expect(page.getByRole('heading', { name: 'Documentos', exact: true })).toBeVisible();
+    await expect(documentos).toBeVisible();
+  } else {
+    await expect(documentos).toHaveCount(0);
   }
 }
 

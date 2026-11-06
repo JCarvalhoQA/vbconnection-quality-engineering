@@ -8,6 +8,7 @@ import {
   SECAO_DEVEDOR,
 } from './matrizLoader';
 import { installPersistAttemptLog, PersistAttemptLog } from './persistGuard';
+import { assertCampoUnicoVisivel } from './ngZorroField';
 import {
   camposObrigatoriosVisuais,
   isStableFieldId,
@@ -105,9 +106,14 @@ export async function assertTerceiroGarantidor(page: Page, contrato: ContratoPag
   }
   await expect(heading).toBeVisible();
   for (const campo of profile.terceiroGarantidor.campos) {
-    if (campo.id) {
-      await expect(page.locator(`#${campo.id}`)).toBeVisible();
-    }
+    const field =
+      profile.fields.find((item) => item.id && item.id === campo.id) ?? {
+        id: campo.id,
+        label: campo.label,
+        tag: 'input',
+        secao: 'Terceiro garantidor',
+      };
+    await assertCampoUnicoVisivel(page, field);
     const asterisco = isStableFieldId(campo.id)
       ? page.locator(`#${campo.id}-label`).getByText('*')
       : contrato.marcaObrigatorio(labelSemAsterisco(campo.label), 'Terceiro garantidor');
@@ -150,6 +156,7 @@ export async function assertEspecificosCe(page: Page, contrato: ContratoPage, pr
     'devedorCelular',
   ]);
   for (const field of profile.fields.filter((item) => item.id && ids.has(item.id))) {
+    await assertCampoUnicoVisivel(page, field);
     await assertCampoVisual(contrato, field);
   }
 }
@@ -158,7 +165,7 @@ export async function assertEspecificosRo(page: Page, contrato: ContratoPage, pr
   await expect(contrato.veiculos.novoUsado).toHaveCount(0);
   const ids = new Set(['dataContrato', 'parcelas', 'totalFinanciamento']);
   for (const field of profile.fields.filter((item) => item.id && ids.has(item.id))) {
-    await expect(page.locator(`#${field.id}`)).toBeVisible();
+    await assertCampoUnicoVisivel(page, field);
     await assertCampoVisual(contrato, field);
   }
 }

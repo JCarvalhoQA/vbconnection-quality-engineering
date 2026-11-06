@@ -210,7 +210,11 @@ export function classifyFailureKind(message = '', spec = {}) {
   if (/skip|ignorad|gate \d live exige|piloto live-readonly exige/.test(hay)) {
     return 'teste-ignorado-regra';
   }
-  if (/master|autentica|401|login|password expir|duas etapas|prefs2|credentials/.test(hay)) {
+  if (
+    /master|autentica|401|login|password expir|auth_password_expired|duas etapas|prefs2|credentials/.test(
+      hay,
+    )
+  ) {
     return 'falha-autenticacao';
   }
   if (/net::err|econnrefused|enotfound|502|503|504|chromium|browser closed|enospc|target closed/.test(hay)) {

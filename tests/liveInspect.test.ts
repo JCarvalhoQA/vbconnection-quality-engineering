@@ -1,9 +1,15 @@
 import { test, expect } from '@playwright/test';
 import {
+  AUTH_PASSWORD_EXPIRED,
+  AUTH_TWO_FACTOR,
+  LiveAuthBlockedError,
+  assertLiveAuthUsable,
+  diagnoseLiveAuth,
   extractPerfil,
   requireMasterCredentials,
   sanitizeEvidenceText,
   shouldAssignPrefs2Capture,
+  summarizeAuthBody,
 } from '../support/liveInspect';
 
 test.describe('Gate 0 liveInspect sanitizer @mocked', () => {
@@ -27,6 +33,79 @@ test.describe('Gate 0 liveInspect sanitizer @mocked', () => {
     expect(extractPerfil({ perfil: { id: 9, perfil: 'MASTER' } })).toBe('MASTER');
     expect(extractPerfil({ perfil: 'ADMINISTRADOR' })).toBe('ADMINISTRADOR');
     expect(extractPerfil({})).toBeUndefined();
+  });
+
+  test('diagnostica senha Master expirada sem vazar credencial', () => {
+    const resumo = summarizeAuthBody({
+      token: 'token-senha-expirada-NAO-LOGAR',
+      password: 'valor-secreto-nao-pode-aparecer',
+      passwordExpirado: true,
+    });
+    expect(resumo.passwordExpirado).toBe(true);
+    expect(resumo.hasToken).toBe(true);
+    expect(JSON.stringify(resumo)).not.toContain('token-senha-expirada-NAO-LOGAR');
+    expect(JSON.stringify(resumo)).not.toContain('valor-secreto-nao-pode-aparecer');
+
+    const diagnosis = diagnoseLiveAuth({ tokensStatus: 200, tokensResumo: resumo });
+    expect(diagnosis.ok).toBe(false);
+    if (diagnosis.ok) {
+      return;
+    }
+    expect(diagnosis.code).toBe(AUTH_PASSWORD_EXPIRED);
+    expect(diagnosis.message).toMatch(/expiração da senha Master/);
+    expect(diagnosis.message).toMatch(/PLAYWRIGHT_MASTER_PASSWORD/);
+    expect(diagnosis.message).toMatch(/Não altere a senha automaticamente/);
+    expect(diagnosis.message).not.toContain('token-senha-expirada-NAO-LOGAR');
+    expect(diagnosis.message).not.toContain('valor-secreto-nao-pode-aparecer');
+    expect(() => assertLiveAuthUsable({ tokensStatus: 200, tokensResumo: resumo })).toThrow(LiveAuthBlockedError);
+  });
+
+  test('heading Alterar senha ou URL de troca também bloqueiam live', () => {
+    const okResumo = summarizeAuthBody({ token: 'e2e-token', tempoDeExpiracao: 30 });
+    const byHeading = diagnoseLiveAuth({
+      tokensStatus: 200,
+      tokensResumo: okResumo,
+      alterarSenhaVisivel: true,
+    });
+    expect(byHeading.ok).toBe(false);
+    if (!byHeading.ok) {
+      expect(byHeading.code).toBe(AUTH_PASSWORD_EXPIRED);
+    }
+    const byUrl = diagnoseLiveAuth({
+      tokensStatus: 200,
+      tokensResumo: okResumo,
+      urlAposLogin: 'https://newfront.vbconnection.info/alterar-senha',
+    });
+    expect(byUrl.ok).toBe(false);
+    if (!byUrl.ok) {
+      expect(byUrl.code).toBe(AUTH_PASSWORD_EXPIRED);
+    }
+  });
+
+  test('2FA e ausência de token têm códigos próprios', () => {
+    const twoFactor = diagnoseLiveAuth({
+      tokensStatus: 200,
+      tokensResumo: summarizeAuthBody({ autenticaEmDuasEtapas: true, email: 'qa@example.com' }),
+    });
+    expect(twoFactor.ok).toBe(false);
+    if (!twoFactor.ok) {
+      expect(twoFactor.code).toBe(AUTH_TWO_FACTOR);
+      expect(twoFactor.message).not.toContain('qa@example.com');
+    }
+    const noToken = diagnoseLiveAuth({
+      tokensStatus: 200,
+      tokensResumo: summarizeAuthBody({ tempoDeExpiracao: 30 }),
+    });
+    expect(noToken.ok).toBe(false);
+    if (!noToken.ok) {
+      expect(noToken.code).toBe('AUTH_NO_TOKEN');
+    }
+    expect(
+      diagnoseLiveAuth({
+        tokensStatus: 200,
+        tokensResumo: summarizeAuthBody({ token: 'e2e-token' }),
+      }),
+    ).toEqual({ ok: true });
   });
 
   test('CI sem Master falha em vez de skip', () => {

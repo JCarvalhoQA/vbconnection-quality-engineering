@@ -11,6 +11,7 @@ export class LoginPage {
   readonly forgotPassword: Locator;
   readonly certificate: Locator;
   readonly heading: Locator;
+  readonly alterarSenhaHeading: Locator;
 
   constructor(private readonly page: Page) {
     this.loader = new LoaderComponent(page);
@@ -20,6 +21,7 @@ export class LoginPage {
     this.forgotPassword = page.getByRole('button', { name: 'Esqueceu a senha?' });
     this.certificate = page.getByRole('button', { name: 'Acessar com certificado digital' });
     this.heading = page.getByRole('heading', { name: 'Olá! Muito bom ter você aqui novamente.' });
+    this.alterarSenhaHeading = page.getByRole('heading', { name: 'Alterar senha' });
   }
 
   async goto(): Promise<void> {

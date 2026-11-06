@@ -4,6 +4,7 @@ import { HomePage } from '../pages/homePage';
 import { LoginPage } from '../pages/loginPage';
 import { destinoEstrutural } from '../config/destinosEstruturais';
 import {
+  assertLiveAuthUsable,
   assertMasterProfile,
   AuthCapture,
   extractDestinoUfs,
@@ -27,9 +28,13 @@ export async function autenticarMasterLive(page: Page): Promise<AuthCapture> {
   await login.loader.waitUntilHidden();
   await expect.poll(() => capture.tokens?.status, { timeout: 30_000 }).toBe(200);
   const tokensResumo = summarizeAuthBody(capture.tokens?.body);
-  if (tokensResumo.autenticaEmDuasEtapas || tokensResumo.passwordExpirado || !tokensResumo.hasToken) {
-    throw new Error(`Live-readonly bloqueado: tokens ${JSON.stringify(tokensResumo)}`);
-  }
+  const alterarSenhaVisivel = await login.alterarSenhaHeading.isVisible().catch(() => false);
+  assertLiveAuthUsable({
+    tokensStatus: capture.tokens?.status,
+    tokensResumo,
+    urlAposLogin: page.url(),
+    alterarSenhaVisivel,
+  });
   try {
     await expect.poll(() => capture.prefs2?.status, { timeout: 30_000 }).toBe(200);
   } catch {

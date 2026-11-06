@@ -98,8 +98,9 @@ function matchesGuardRoute(url: URL, mode: PersistGuardMode): boolean {
  * Intercepta persistência. Registrar por último (LIFO) nos testes mockados para o mock de
  * `contratos/registrar` responder. No live-readonly, aborta registrar e demais mutações de /api/.
  *
- * Limites conhecidos (não cobertos): WebSocket, form nativo para origem fora do padrão,
- * outro BrowserContext, rotas instaladas depois deste guard.
+ * Limites conhecidos (não cobertos): WebSocket, Service Worker (Playwright `serviceWorkers: 'block'`
+ * no config), form nativo para origem fora do padrão, outro BrowserContext, rotas instaladas
+ * depois deste guard, GET com efeito colateral em URL de persistência.
  */
 export async function installPersistGuard(page: Page, options: PersistGuardOptions = {}): Promise<void> {
   const mode = options.mode ?? 'mocked';

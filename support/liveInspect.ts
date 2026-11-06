@@ -96,6 +96,85 @@ export function summarizeAuthBody(body: unknown): Record<string, unknown> {
   };
 }
 
+export const AUTH_PASSWORD_EXPIRED = 'AUTH_PASSWORD_EXPIRED';
+export const AUTH_TWO_FACTOR = 'AUTH_TWO_FACTOR';
+export const AUTH_NO_TOKEN = 'AUTH_NO_TOKEN';
+export const AUTH_TOKENS_HTTP = 'AUTH_TOKENS_HTTP';
+
+export class LiveAuthBlockedError extends Error {
+  readonly code: string;
+
+  constructor(code: string, message: string) {
+    super(message);
+    this.name = 'LiveAuthBlockedError';
+    this.code = code;
+  }
+}
+
+const SECRET_UPDATE_HINT =
+  'Após a troca autorizada, atualize o secret PLAYWRIGHT_MASTER_PASSWORD no Environment live-readonly. Não altere a senha automaticamente e não registre a credencial em logs ou artifacts.';
+
+export interface LiveAuthDiagnosisInput {
+  readonly tokensStatus?: number;
+  readonly tokensResumo: Record<string, unknown>;
+  readonly urlAposLogin?: string;
+  readonly alterarSenhaVisivel?: boolean;
+}
+
+export type LiveAuthDiagnosis =
+  | { readonly ok: true }
+  | { readonly ok: false; readonly code: string; readonly message: string };
+
+function urlIndicaTrocaDeSenha(url: string | undefined): boolean {
+  if (!url) {
+    return false;
+  }
+  return /alterar|senha|expirad/i.test(url);
+}
+
+export function diagnoseLiveAuth(input: LiveAuthDiagnosisInput): LiveAuthDiagnosis {
+  const expirado =
+    input.tokensResumo.passwordExpirado === true ||
+    input.alterarSenhaVisivel === true ||
+    urlIndicaTrocaDeSenha(input.urlAposLogin);
+  if (expirado) {
+    return {
+      ok: false,
+      code: AUTH_PASSWORD_EXPIRED,
+      message: `Falha de autenticação por expiração da senha Master. Interrompa a execução. ${SECRET_UPDATE_HINT}`,
+    };
+  }
+  if (input.tokensResumo.autenticaEmDuasEtapas === true) {
+    return {
+      ok: false,
+      code: AUTH_TWO_FACTOR,
+      message: 'Falha de autenticação: a API exigiu verificação em duas etapas. Live-readonly Master não segue o fluxo de 2FA.',
+    };
+  }
+  if (input.tokensStatus !== undefined && input.tokensStatus !== 200) {
+    return {
+      ok: false,
+      code: AUTH_TOKENS_HTTP,
+      message: `Falha de autenticação: POST /auth/tokens retornou HTTP ${input.tokensStatus}.`,
+    };
+  }
+  if (input.tokensResumo.hasToken !== true) {
+    return {
+      ok: false,
+      code: AUTH_NO_TOKEN,
+      message: 'Falha de autenticação: POST /auth/tokens não devolveu token utilizável.',
+    };
+  }
+  return { ok: true };
+}
+
+export function assertLiveAuthUsable(input: LiveAuthDiagnosisInput): void {
+  const diagnosis = diagnoseLiveAuth(input);
+  if (!diagnosis.ok) {
+    throw new LiveAuthBlockedError(diagnosis.code, diagnosis.message);
+  }
+}
+
 export interface AuthCapture {
   tokens?: { status: number; url: string; body: unknown };
   prefs2?: { status: number; url: string; body: unknown };

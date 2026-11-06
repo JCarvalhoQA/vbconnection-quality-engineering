@@ -106,6 +106,53 @@ test.describe('Perfil visual de UF @mocked', () => {
     expect(corRj?.requiredVisual).toBe(true);
   });
 
+  test('lote 4 RR/RS/SC/SP sem TG e sem Novo/usado na UI live', () => {
+    for (const uf of ['RR', 'RS', 'SC', 'SP'] as const) {
+      const profile = loadUfUiProfile(uf);
+      expect(profile.formularioDisponivel).toBe(true);
+      expect(profile.matrizJava).toBe(true);
+      expect(profile.terceiroGarantidor.visivel).toBe(false);
+      expect(profile.terceiroGarantidor.campoCount).toBe(0);
+      expect(profile.veiculo.novoUsado.visivel).toBe(false);
+      expect(profile.veiculo.zeroKm.default).toBe('Sim');
+      expect(profile.credor).toBe(true);
+      expect(profile.documentos).toBe(true);
+      expect(profile.veiculo.camposZeroKmSim.some((campo) => campo.formControl === 'tipoEspecie')).toBe(false);
+      expect(hasMatrizFixture(uf)).toBe(true);
+      expect(secaoVisivel(loadMatrizFixture(uf), SECAO_TERCEIRO_GARANTIDOR)).toBe(false);
+      expect(campoObrigatorio(loadMatrizFixture(uf), SECAO_VEICULO, 'INDICA_NOVO_USADO')).toBe(false);
+    }
+    expect(loadUfUiProfile('RR').idCombo).toBe(11);
+    expect(loadUfUiProfile('RS').idCombo).toBe(231);
+    expect(loadUfUiProfile('SC').idCombo).toBe(4);
+    expect(loadUfUiProfile('SP').idCombo).toBe(1);
+    expect(loadUfUiProfile('RR').fieldCount).toBe(49);
+    expect(loadUfUiProfile('RS').fieldCount).toBe(54);
+    expect(loadUfUiProfile('SC').fieldCount).toBe(47);
+    expect(loadUfUiProfile('SP').fieldCount).toBe(50);
+    expect(loadUfUiProfile('RR').requiredVisualCount).toBe(25);
+    expect(loadUfUiProfile('RS').requiredVisualCount).toBe(24);
+    expect(loadUfUiProfile('SC').requiredVisualCount).toBe(20);
+    expect(loadUfUiProfile('SP').requiredVisualCount).toBe(26);
+    expect(loadUfUiProfile('RR').fields.some((field) => field.id === 'devedorComplemento' && field.requiredVisual)).toBe(
+      true,
+    );
+    expect(loadUfUiProfile('RS').fields.some((field) => field.id === 'tipoContrato')).toBe(true);
+    expect(loadUfUiProfile('RS').fields.some((field) => field.id === 'formaContrato')).toBe(true);
+    expect(loadUfUiProfile('RS').fields.some((field) => field.id === 'dataCadastro')).toBe(true);
+    expect(loadUfUiProfile('SC').fields.some((field) => field.id === 'registroSIRCOF')).toBe(true);
+    expect(loadUfUiProfile('SC').fields.some((field) => field.id === 'codigoAgenteFinanceiro')).toBe(false);
+    expect(loadUfUiProfile('SP').fields.some((field) => field.id === 'inicioVigencia' && field.requiredVisual)).toBe(true);
+    expect(loadUfUiProfile('SP').fields.some((field) => field.id === 'finalVigencia' && field.requiredVisual)).toBe(true);
+    const gravameRs = loadUfUiProfile('RS').veiculo.camposZeroKmSim.find((campo) => campo.formControl === 'restricao');
+    expect(gravameRs?.requiredVisual).toBe(false);
+    const gravameSp = loadUfUiProfile('SP').veiculo.camposZeroKmSim.find((campo) => campo.formControl === 'restricao');
+    expect(gravameSp?.requiredVisual).toBe(true);
+    expect(loadUfUiProfile('SP').veiculo.camposZeroKmSim.some((campo) => campo.formControl === 'ufLicenciamento')).toBe(
+      false,
+    );
+  });
+
   test('lote 2 MG/MS/MT/PB sem TG e sem Novo/usado na UI live', () => {
     for (const uf of ['MG', 'MS', 'MT', 'PB'] as const) {
       const profile = loadUfUiProfile(uf);

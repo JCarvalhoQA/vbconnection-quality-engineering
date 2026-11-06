@@ -36,6 +36,22 @@ export class LoginPage {
     await this.submit.click();
   }
 
+  /**
+   * Remove usuário/senha do DOM depois do POST. Evita dump no error-context/screenshot
+   * se a SPA permanecer na tela de login.
+   */
+  async redactSensitiveFields(): Promise<void> {
+    await this.password.fill('').catch(() => undefined);
+    await this.username.fill('').catch(() => undefined);
+    await this.password
+      .evaluate((el) => {
+        const input = el as HTMLInputElement;
+        input.value = '';
+        input.setAttribute('value', '');
+      })
+      .catch(() => undefined);
+  }
+
   async login(credentials: LoginCredentials): Promise<void> {
     await this.fillCredentials(credentials);
     const tokens = this.page.waitForResponse((response) => {

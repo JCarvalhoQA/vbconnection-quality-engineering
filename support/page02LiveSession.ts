@@ -23,6 +23,7 @@ export async function autenticarMasterLive(page: Page): Promise<AuthCapture> {
   await login.goto();
   await login.fillCredentials({ username: credenciais.username, password: credenciais.password });
   await login.submitLogin();
+  await login.redactSensitiveFields();
   await login.loader.waitUntilHidden();
   await expect.poll(() => capture.tokens?.status, { timeout: 30_000 }).toBe(200);
   const tokensResumo = summarizeAuthBody(capture.tokens?.body);

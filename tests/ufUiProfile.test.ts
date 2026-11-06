@@ -70,6 +70,22 @@ test.describe('Perfil visual de UF @mocked', () => {
     expect(loadUfUiProfile('CE').terceiroGarantidor.campos.every((campo) => campo.requiredVisual === false)).toBe(true);
   });
 
+  test('lote 1 AC/AP/DF sem TG; ES com TG; todos com formulário live', () => {
+    for (const uf of ['AC', 'AP', 'DF'] as const) {
+      const profile = loadUfUiProfile(uf);
+      expect(profile.formularioDisponivel).toBe(true);
+      expect(profile.terceiroGarantidor.visivel).toBe(false);
+      expect(profile.veiculo.novoUsado.visivel).toBe(false);
+      expect(profile.credor).toBe(true);
+      expect(profile.documentos).toBe(true);
+    }
+    const es = loadUfUiProfile('ES');
+    expect(es.formularioDisponivel).toBe(true);
+    expect(es.terceiroGarantidor.visivel).toBe(true);
+    expect(es.veiculo.novoUsado.visivel).toBe(false);
+    expect(loadUfUiProfile('SE').formularioDisponivel).toBe(false);
+  });
+
   test('UF ausente falha de forma explícita', () => {
     expect(hasUfUiProfile('XX')).toBe(false);
     expect(() => loadUfUiProfile('XX')).toThrow(UfUiProfileError);

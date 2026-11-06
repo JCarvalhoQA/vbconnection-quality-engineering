@@ -2,6 +2,12 @@ name: Playwright tests
 
 # Independent quality pipeline. It does not deploy VBConnection and it is not a
 # required check of the application repository.
+#
+# Action pin policy: major tags of Node.js 24 runtimes (not @latest).
+#   actions/checkout@v5
+#   actions/setup-node@v5
+#   actions/upload-artifact@v6
+# Runner: ubuntu-24.04 (explicit; ubuntu-latest is moving to 26.04).
 
 on:
   workflow_dispatch:
@@ -31,6 +37,11 @@ on:
         options:
           - newfront
           - hmg
+      ufs:
+        description: Optional PAGE-02 UFs (e.g. BA,CE,RO or AC,AP,DF,ES). Empty = all implemented structural specs. Ignored unless suite=structural.
+        type: string
+        required: false
+        default: ''
   pull_request:
     branches:
       - main
@@ -40,13 +51,14 @@ permissions:
 
 concurrency:
   group: playwright-${{ github.workflow }}-${{ github.ref }}-${{ github.event_name == 'workflow_dispatch' && inputs.mode || 'mocked' }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' || inputs.mode != 'live-readonly' }}
 
 env:
   CI: true
   PLAYWRIGHT_MODE: ${{ github.event_name == 'workflow_dispatch' && inputs.mode || 'mocked' }}
   SUITE: ${{ github.event_name == 'workflow_dispatch' && inputs.suite || 'regression' }}
   PLAYWRIGHT_TARGET: ${{ github.event_name == 'workflow_dispatch' && inputs.target || 'newfront' }}
+  PLAYWRIGHT_UFS: ${{ github.event_name == 'workflow_dispatch' && inputs.ufs || '' }}
   PLAYWRIGHT_NEWFRONT_URL: https://newfront.vbconnection.info
   PLAYWRIGHT_GATE0_LIVE: '0'
   PLAYWRIGHT_GATE1_LIVE: '0'
@@ -58,16 +70,16 @@ jobs:
   mocked:
     name: Mocked
     if: github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && inputs.mode != 'live-readonly')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
-      - name: Setup Node.js 20
-        uses: actions/setup-node@v4
+      - name: Setup Node.js 24
+        uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
       - name: Install dependencies
@@ -117,7 +129,7 @@ jobs:
 
       - name: Upload reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: playwright-${{ github.run_id }}-mocked-${{ env.SUITE }}
           path: |
@@ -144,7 +156,7 @@ jobs:
   live-readonly:
     name: Live readonly
     if: github.event_name == 'workflow_dispatch' && inputs.mode == 'live-readonly'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     environment: live-readonly
     env:
@@ -153,12 +165,12 @@ jobs:
       PLAYWRIGHT_MASTER_PERFIL: MASTER
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
-      - name: Setup Node.js 20
-        uses: actions/setup-node@v4
+      - name: Setup Node.js 24
+        uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
       - name: Install dependencies
@@ -208,10 +220,10 @@ jobs:
 
       - name: Upload reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: playwright-${{ github.run_id }}-live-readonly-${{ env.SUITE }}
-          # Sem trace.zip/video: o snapshot Playwright da tela de login inclui o valor do campo senha.
+          # Sem trace.zip/video: snapshot de login pode conter valor de senha.
           path: |
             playwright-report/**
             test-results/e2e-results.json
@@ -220,7 +232,7 @@ jobs:
             test-results/**/*.png
             test-results/**/error-context.md
           if-no-files-found: warn
-          retention-days: 14
+          retention-days: 7
 
       - name: Fail the workflow when the suite fails
         if: always()

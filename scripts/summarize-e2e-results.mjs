@@ -289,11 +289,21 @@ export function renderSummary({ metrics, meta }) {
     '',
     `Suíte: ${meta.suite}`,
     '',
-    `UF: ${metrics.ufs?.length ? metrics.ufs.join(', ') : 'n/d'}`,
+    `Lote: ${meta.lote || 'n/d'}`,
+    '',
+    `UFs selecionadas: ${meta.ufsSelecionadas || 'n/d'}`,
+    '',
+    `UFs executadas: ${metrics.ufs?.length ? metrics.ufs.join(', ') : 'n/d'}`,
     '',
     `Alvo: ${meta.target}`,
     '',
+    `Run ID: ${meta.runId || 'local'}`,
+    '',
     `Artifact: ${artifact}`,
+    '',
+    `Segurança: ${meta.securityStatus || 'n/d'}`,
+    '',
+    `Persistência: ${meta.persistStatus || 'n/d'}`,
     '',
     `Status geral: ${meta.statusLabel}`,
     '',
@@ -365,11 +375,21 @@ function main() {
       deployId: process.env.DEPLOY_ID || 'não informado',
       mode: process.env.PLAYWRIGHT_MODE || 'mocked',
       suite: process.env.SUITE || 'n/d',
+      lote: process.env.PLAYWRIGHT_UFS === 'AC,AP,DF,ES' ? '01' : process.env.PLAYWRIGHT_UFS === 'BA,CE,RO' ? 'baseline' : process.env.SUITE || 'n/d',
+      ufsSelecionadas: process.env.PLAYWRIGHT_UFS || 'todas as estruturais implementadas',
       runId: process.env.GITHUB_RUN_ID || '',
       target:
         process.env.PLAYWRIGHT_TARGET_URL ||
         process.env.PLAYWRIGHT_NEWFRONT_URL ||
         'https://newfront.vbconnection.info',
+      securityStatus:
+        process.env.PLAYWRIGHT_MODE === 'live-readonly'
+          ? 'Environment live-readonly · workers=1 · snapshots sanitizados · credencial Master não logada'
+          : 'mocked · sem credencial Master',
+      persistStatus:
+        process.env.PLAYWRIGHT_MODE === 'live-readonly'
+          ? 'persistGuard live-readonly (mutações /api/ abortadas; limites: WS, form nativo, outro context)'
+          : 'persistGuard mocked (registrar cai no mock)',
       statusLabel: statusLabel(classification),
     },
   });

@@ -18,6 +18,8 @@ export class VeiculoSection {
   readonly motor: Locator;
   readonly novoUsado: Locator;
   readonly anoFabricacao: Locator;
+  readonly especie: Locator;
+  readonly cor: Locator;
   readonly ufPlaca: Locator;
   readonly placa: Locator;
   readonly renavam: Locator;
@@ -37,6 +39,8 @@ export class VeiculoSection {
     this.motor = this.secao.getByRole('textbox', { name: /Número motor/i });
     this.novoUsado = this.secao.getByRole('combobox', { name: /Novo\s*\/\s*usado/i });
     this.anoFabricacao = this.secao.getByRole('textbox', { name: /Ano fabricação/i });
+    this.especie = this.secao.getByRole('combobox', { name: /esp[eé]cie/i });
+    this.cor = this.secao.getByRole('combobox', { name: /^Cor\b/i }).or(this.secao.getByRole('textbox', { name: /^Cor\b/i }));
     this.ufPlaca = this.secao.getByRole('combobox', { name: /UF da placa/i });
     this.placa = this.secao.getByRole('textbox', { name: /^Placa/i }).or(this.secao.getByPlaceholder('Placa'));
     this.renavam = this.secao.getByRole('textbox', { name: /RENAVAM/i }).or(this.secao.getByPlaceholder('RENAVAM'));
@@ -80,6 +84,8 @@ export class VeiculoSection {
       await expect(this.motor).toBeVisible();
     }
     await this.expectAnoFabricacao(profile);
+    await this.expectCampoInventario(profile, 'tipoEspecie', this.especie);
+    await this.expectCampoInventario(profile, 'descricaoCorVeiculo', this.cor);
     await this.expectCamposPlaca(false);
   }
 
@@ -101,6 +107,18 @@ export class VeiculoSection {
     await expect(this.ufPlaca).toBeHidden();
     await expect(this.placa.first()).toBeHidden();
     await expect(this.renavam.first()).toBeHidden();
+  }
+
+  async expectCampoInventario(profile: UfUiProfile, formControl: string, locator: Locator): Promise<void> {
+    const campo = profile.veiculo.camposZeroKmSim.find((item) => item.formControl === formControl);
+    if (!campo) {
+      return;
+    }
+    await expect(locator).toBeVisible();
+    if (campo.requiredVisual) {
+      const rotulo = campo.label.replace(/\*+\s*$/, '').trim();
+      await expect(this.marcaObrigatorio(new RegExp(rotulo.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'))).toBeVisible();
+    }
   }
 
   async expectAnoFabricacao(profile: UfUiProfile): Promise<void> {

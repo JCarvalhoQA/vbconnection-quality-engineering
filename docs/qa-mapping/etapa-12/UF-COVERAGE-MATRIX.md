@@ -12,4 +12,14 @@ Status estrutural ≠ homologação funcional de registro.
 | MA, TO | Sim | Sim (lote 5) | Implementado, **não executado live** | Lote 5 |
 | SE | Não | Não | Não | Exceção — formulário indisponível |
 
-Implementado: **21 UFs**. Live aprovado acumulado comprovado: 15 (42267723718) + lote 4 isolado 4 (42281730173). MA/TO live = pendente pós-merge.
+Implementado: **21 UFs**. Live aprovado acumulado comprovado: 15 (`42267723718`) + lote 4 isolado 4 (`42281730173`). MA/TO live = pendente pós-merge.
+
+## Distinção (não misturar)
+
+| Classe | O que prova | O que não prova |
+|---|---|---|
+| Estrutural implementada | Spec + perfil + seleção CI existem | Homologação funcional / registro |
+| Mocked aprovada | Casca e condicionais contra mock | UI live do newfront |
+| Live aprovada | Casca no ambiente real, sem persistir | Rotação de senha / registro |
+| Bloqueada | Gate de segurança impede disparo | Indisponibilidade de formulário |
+| Formulário indisponível | Destino SE sem PAGE-02 | Falha de teste |

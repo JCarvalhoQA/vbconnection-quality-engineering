@@ -61,4 +61,46 @@ test.describe('E2 persistGuard @mocked', () => {
       false,
     );
   });
+
+  test('permite consultas GET e recusa mutações de persistência no live-readonly', () => {
+    const permitidos = [
+      ['GET', 'https://newfront.vbconnection.info/api/fornecedores/destinos-combo'],
+      ['GET', 'https://newfront.vbconnection.info/api/contratos/form/BA'],
+      ['GET', 'https://newfront.vbconnection.info/api/servicos-cliente/vigente'],
+      ['POST', 'https://hmg.vbconnection.info/vbauto.api/auth/tokens'],
+      ['POST', 'https://hmg.vbconnection.info/vbauto.api/auth/refresh'],
+    ];
+    for (const [method, url] of permitidos) {
+      expect(shouldAbortPersist(method, url, 'live-readonly'), `${method} ${url}`).toBe(false);
+    }
+
+    const proibidos = [
+      ['POST', 'https://newfront.vbconnection.info/api/contratos/registrar'],
+      ['PUT', 'https://newfront.vbconnection.info/api/contratos/123'],
+      ['PATCH', 'https://newfront.vbconnection.info/api/contratos/123'],
+      ['DELETE', 'https://newfront.vbconnection.info/api/contratos/123'],
+      ['POST', 'https://newfront.vbconnection.info/api/imagens/upload'],
+      ['POST', 'https://newfront.vbconnection.info/api/gravames'],
+      ['POST', 'https://newfront.vbconnection.info/api/b3/enviar'],
+      ['POST', 'https://newfront.vbconnection.info/api/enviodocumento'],
+      ['POST', 'https://newfront.vbconnection.info/api/qualquer-mutacao'],
+    ];
+    for (const [method, url] of proibidos) {
+      expect(shouldAbortPersist(method, url, 'live-readonly'), `${method} ${url}`).toBe(true);
+    }
+  });
+
+  test('GET em URL de persistência não é abortado — limitação documentada de efeito colateral', () => {
+    expect(shouldAbortPersist('GET', 'https://host/api/contratos/registrar', 'live-readonly')).toBe(false);
+    expect(shouldAbortPersist('GET', 'https://host/api/imagens/upload', 'live-readonly')).toBe(false);
+    expect(isPersistUrl('https://host/api/contratos/registrar')).toBe(true);
+  });
+
+  test('mocked aborta persistência fora de registrar e deixa consultas de configuração passarem', () => {
+    expect(shouldAbortPersist('POST', 'https://host/api/imagens/upload', 'mocked')).toBe(true);
+    expect(shouldAbortPersist('POST', 'https://host/api/contratos/registrar', 'mocked')).toBe(false);
+    expect(shouldFallbackRegistrar('POST', 'https://host/api/contratos/registrar', 'mocked')).toBe(true);
+    expect(shouldAbortPersist('POST', 'https://host/api/servicos-cliente/vigente', 'mocked')).toBe(false);
+    expect(shouldAbortPersist('PUT', 'https://host/api/lotes', 'mocked')).toBe(true);
+  });
 });

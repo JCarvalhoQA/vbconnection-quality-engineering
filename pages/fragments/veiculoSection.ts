@@ -57,11 +57,14 @@ export class VeiculoSection {
   async abrirLinha(): Promise<void> {
     await this.secao.scrollIntoViewIfNeeded();
     await this.adicionar.click();
-    await expect(this.chassi.first()).toBeVisible({ timeout: 15_000 });
+    await expect(this.chassi).toHaveCount(1);
+    await expect(this.chassi).toBeVisible({ timeout: 15_000 });
   }
 
   async expectLinhaAberta(): Promise<void> {
-    await expect(this.chassi.first()).toBeVisible();
+    await expect(this.chassi).toHaveCount(1);
+    await expect(this.chassi).toBeVisible();
+    await expect(this.gravame).toHaveCount(1);
     await expect(this.salvar).toBeVisible();
     await expect(this.excluir).toBeVisible();
     await expect(this.secao.getByRole('dialog')).toHaveCount(0);
@@ -69,7 +72,7 @@ export class VeiculoSection {
 
   async expectCamposIniciais(profile: UfUiProfile): Promise<void> {
     await this.expectLinhaAberta();
-    await expect(this.gravame.first()).toBeVisible();
+    await expect(this.gravame).toBeVisible();
     await expect(this.zeroKm).toBeVisible();
     if (profile.veiculo.zeroKm.default) {
       await expect(this.zeroKm).toContainText(profile.veiculo.zeroKm.default);
@@ -84,8 +87,8 @@ export class VeiculoSection {
       await expect(this.motor).toBeVisible();
     }
     await this.expectAnoFabricacao(profile);
-    await this.expectCampoInventario(profile, 'tipoEspecie', this.especie);
-    await this.expectCampoInventario(profile, 'descricaoCorVeiculo', this.cor);
+    await this.expectCampoInventario(profile, 'tipoEspecie', this.especie, true);
+    await this.expectCampoInventario(profile, 'descricaoCorVeiculo', this.cor, false);
     await this.expectCamposPlaca(false);
   }
 
@@ -100,20 +103,31 @@ export class VeiculoSection {
   async expectCamposPlaca(visivel: boolean): Promise<void> {
     if (visivel) {
       await expect(this.ufPlaca).toBeVisible();
-      await expect(this.placa.first()).toBeVisible();
-      await expect(this.renavam.first()).toBeVisible();
+      await expect(this.placa).toHaveCount(1);
+      await expect(this.placa).toBeVisible();
+      await expect(this.renavam).toHaveCount(1);
+      await expect(this.renavam).toBeVisible();
       return;
     }
     await expect(this.ufPlaca).toBeHidden();
-    await expect(this.placa.first()).toBeHidden();
-    await expect(this.renavam.first()).toBeHidden();
+    await expect(this.placa).toBeHidden();
+    await expect(this.renavam).toBeHidden();
   }
 
-  async expectCampoInventario(profile: UfUiProfile, formControl: string, locator: Locator): Promise<void> {
+  async expectCampoInventario(
+    profile: UfUiProfile,
+    formControl: string,
+    locator: Locator,
+    detectarAusencia = false,
+  ): Promise<void> {
     const campo = profile.veiculo.camposZeroKmSim.find((item) => item.formControl === formControl);
     if (!campo) {
+      if (detectarAusencia) {
+        await expect(locator).toHaveCount(0);
+      }
       return;
     }
+    await expect(locator).toHaveCount(1);
     await expect(locator).toBeVisible();
     if (campo.requiredVisual) {
       const rotulo = campo.label.replace(/\*+\s*$/, '').trim();
@@ -153,7 +167,7 @@ export class VeiculoSection {
         await confirmar.first().click();
       }
     }
-    await expect(this.chassi.first()).toBeHidden({ timeout: 10_000 });
+    await expect(this.chassi).toBeHidden({ timeout: 10_000 });
     await expect(this.secao.getByText(/Nenhum veículo/i)).toBeVisible({ timeout: 10_000 });
   }
 

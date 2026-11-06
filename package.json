@@ -27,6 +27,7 @@
     "install:browsers": "playwright install chromium",
     "report": "playwright show-report",
     "test:unit": "playwright test --config=playwright.unit.config.ts",
+    "test:mutation": "playwright test --config=playwright.unit.config.ts tests/structuralMutation.test.ts",
     "typecheck": "tsc --noEmit",
     "matriz:generate": "node scripts/generate-matriz-fixtures.mjs",
     "matriz:compare": "node scripts/compare-mock-matriz.mjs"

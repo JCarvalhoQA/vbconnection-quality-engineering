@@ -64,6 +64,10 @@ if (mode === 'live-readonly' && eventName === 'pull_request') {
   fail('live-readonly is not available on pull requests.');
 }
 if (mode === 'live-readonly') {
+  const ref = process.env.GITHUB_REF || '';
+  if (ref && ref !== 'refs/heads/main') {
+    fail('live-readonly is restricted to refs/heads/main.');
+  }
   if (!process.env.PLAYWRIGHT_MASTER_USER || !process.env.PLAYWRIGHT_MASTER_PASSWORD) {
     fail('live-readonly requires Master credentials from the live-readonly GitHub Environment.');
   }

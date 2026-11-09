@@ -1,5 +1,6 @@
 import { UFS_ESTRUTURAIS } from '../config/destinosEstruturais';
 import { loadUfUiProfile, UfUiProfile } from './ufUiProfile';
+import { camposCascaAssertaveis, headingRenderizavelNoMock } from './uiFormMock';
 
 /**
  * Mutation testing estrutural: muta clones locais do perfil UI.
@@ -20,7 +21,7 @@ export type MutationKind =
   | 'remove-section'
   | 'swap-uf';
 
-export type MutationVerdict = 'detected' | 'survived' | 'invalid';
+export type MutationVerdict = 'detected' | 'survived' | 'invalid' | 'error';
 
 export interface MutationCase {
   readonly id: string;
@@ -36,6 +37,7 @@ export interface MutationScore {
   readonly detected: number;
   readonly survived: number;
   readonly invalid: number;
+  readonly error: number;
   readonly score: number;
   readonly cases: readonly MutationCase[];
 }
@@ -169,8 +171,8 @@ export function liveOracleFindings(expected: UfUiProfile, observed: UfUiProfile)
 const MOCK_MIN_HEADINGS = ['Registrar contrato', 'Destino', 'Agente financeiro', 'Veículos', 'Contrato', 'Devedor'];
 
 /**
- * Espelha o caminho mocked: seções mínimas + TG + linha de veículo.
- * Não cobre asteriscos de casca nem credor/documentos.
+ * Espelha o caminho mocked após Etapa 14: casca do inventário (campos mapeados + `*`)
+ * + TG + credor/documentos + linha de veículo.
  */
 export function mockedOracleFindings(expected: UfUiProfile, observed: UfUiProfile): string[] {
   const findings: string[] = [];
@@ -178,6 +180,27 @@ export function mockedOracleFindings(expected: UfUiProfile, observed: UfUiProfil
     if (!observed.headings.includes(heading)) {
       findings.push(`missing-section:${heading}`);
     }
+  }
+  for (const heading of expected.headings.filter(headingRenderizavelNoMock)) {
+    if (!observed.headings.includes(heading)) {
+      findings.push(`missing-section:${heading}`);
+    }
+  }
+  for (const field of camposCascaAssertaveis(expected)) {
+    const atual = observed.fields.find((item) => (field.id && item.id === field.id) || item.label === field.label);
+    if (!atual) {
+      findings.push(`missing-required:${field.id ?? field.label}`);
+      continue;
+    }
+    if (field.requiredVisual && !atual.requiredVisual) {
+      findings.push(`asterisk-removed:${field.id ?? field.label}`);
+    }
+    if (!field.requiredVisual && atual.requiredVisual) {
+      findings.push(`asterisk-added:${field.id ?? field.label}`);
+    }
+  }
+  if (expected.credor !== observed.credor) {
+    findings.push(expected.credor ? 'missing-credor' : 'unexpected-credor');
   }
   if (expected.terceiroGarantidor.visivel !== observed.terceiroGarantidor.visivel) {
     findings.push(expected.terceiroGarantidor.visivel ? 'missing-tg' : 'unexpected-tg');
@@ -212,9 +235,9 @@ export function mockedOracleFindings(expected: UfUiProfile, observed: UfUiProfil
 function applyKind(profile: UfUiProfile, kind: MutationKind, swapUf?: string): { next: UfUiProfile; invalid?: string } {
   switch (kind) {
     case 'remove-required-field': {
-      const alvo = profile.fields.find((field) => field.requiredVisual && field.id && field.id !== 'destino');
+      const alvo = camposCascaAssertaveis(profile).find((field) => field.requiredVisual && field.id);
       if (!alvo) {
-        return { next: profile, invalid: 'sem campo obrigatório removível' };
+        return { next: profile, invalid: 'sem campo obrigatório de casca removível' };
       }
       return {
         next: mutate(profile, (draft) => {
@@ -223,9 +246,9 @@ function applyKind(profile: UfUiProfile, kind: MutationKind, swapUf?: string): {
       };
     }
     case 'alter-asterisk': {
-      const alvo = profile.fields.find((field) => field.requiredVisual && field.id && field.id !== 'destino');
+      const alvo = camposCascaAssertaveis(profile).find((field) => field.requiredVisual && field.id);
       if (!alvo) {
-        return { next: profile, invalid: 'sem asterisco alterável' };
+        return { next: profile, invalid: 'sem asterisco de casca alterável' };
       }
       return {
         next: mutate(profile, (draft) => {
@@ -383,15 +406,27 @@ export function runStructuralMutations(ufs: readonly string[] = UFS_ESTRUTURAIS)
           });
           continue;
         }
-        const findings = evaluate(expected, applied.next, suite);
-        cases.push({
-          id,
-          uf,
-          kind,
-          suite,
-          verdict: findings.length ? 'detected' : 'survived',
-          findings,
-        });
+        try {
+          const findings = evaluate(expected, applied.next, suite);
+          cases.push({
+            id,
+            uf,
+            kind,
+            suite,
+            verdict: findings.length ? 'detected' : 'survived',
+            findings,
+          });
+        } catch (error) {
+          cases.push({
+            id,
+            uf,
+            kind,
+            suite,
+            verdict: 'error',
+            findings: [],
+            reason: error instanceof Error ? error.message : String(error),
+          });
+        }
       }
     }
   }
@@ -399,14 +434,40 @@ export function runStructuralMutations(ufs: readonly string[] = UFS_ESTRUTURAIS)
   const detected = cases.filter((item) => item.verdict === 'detected').length;
   const survived = cases.filter((item) => item.verdict === 'survived').length;
   const invalid = cases.filter((item) => item.verdict === 'invalid').length;
+  const error = cases.filter((item) => item.verdict === 'error').length;
   const denom = detected + survived;
   return {
     detected,
     survived,
     invalid,
+    error,
     score: denom === 0 ? 0 : detected / denom,
     cases,
   };
+}
+
+export function scoreByKind(score: MutationScore): Record<string, { detected: number; survived: number; invalid: number }> {
+  const out: Record<string, { detected: number; survived: number; invalid: number }> = {};
+  for (const item of score.cases) {
+    const bucket = out[item.kind] ?? { detected: 0, survived: 0, invalid: 0 };
+    if (item.verdict === 'detected' || item.verdict === 'survived' || item.verdict === 'invalid') {
+      bucket[item.verdict] += 1;
+    }
+    out[item.kind] = bucket;
+  }
+  return out;
+}
+
+export function scoreByUf(score: MutationScore): Record<string, { detected: number; survived: number; invalid: number }> {
+  const out: Record<string, { detected: number; survived: number; invalid: number }> = {};
+  for (const item of score.cases) {
+    const bucket = out[item.uf] ?? { detected: 0, survived: 0, invalid: 0 };
+    if (item.verdict === 'detected' || item.verdict === 'survived' || item.verdict === 'invalid') {
+      bucket[item.verdict] += 1;
+    }
+    out[item.uf] = bucket;
+  }
+  return out;
 }
 
 export function summarizeSurvivors(score: MutationScore): readonly MutationCase[] {

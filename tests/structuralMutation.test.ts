@@ -3,6 +3,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { UFS_ESTRUTURAIS } from '../config/destinosEstruturais';
 import { LIVE_INVENTORY_PATH } from '../support/repoPaths';
 import { loadUfUiProfile } from '../support/ufUiProfile';
+import { camposCascaAssertaveis } from '../support/uiFormMock';
 import {
   liveOracleFindings,
   mockedOracleFindings,
@@ -39,14 +40,22 @@ test.describe('Mutation testing estrutural PAGE-02 @mocked', () => {
     expect(liveOracleFindings(ba, zeroKm)).toContain('zero-km-default');
   });
 
-  test('oráculo mocked não cobre asterisco de casca; cobre TG e veículo', () => {
+  test('oráculo mocked detecta asterisco e campo obrigatório de casca', () => {
     const to = loadUfUiProfile('TO');
+    const alvo = camposCascaAssertaveis(to).find((field) => field.requiredVisual && field.id);
+    expect(alvo?.id).toBeTruthy();
+
     const semAsterisco = {
       ...to,
-      fields: to.fields.map((field) => (field.id === 'numeroContrato' ? { ...field, requiredVisual: false } : field)),
+      fields: to.fields.map((field) => (field.id === alvo!.id ? { ...field, requiredVisual: false } : field)),
     };
-    expect(mockedOracleFindings(to, semAsterisco)).toEqual([]);
-    expect(liveOracleFindings(to, semAsterisco).some((item) => item.startsWith('asterisk-removed'))).toBe(true);
+    expect(mockedOracleFindings(to, semAsterisco).some((item) => item.startsWith('asterisk-removed'))).toBe(true);
+
+    const semCampo = {
+      ...to,
+      fields: to.fields.filter((field) => field.id !== alvo!.id),
+    };
+    expect(mockedOracleFindings(to, semCampo).some((item) => item.startsWith('missing-required'))).toBe(true);
 
     const comTg = {
       ...to,
@@ -55,34 +64,24 @@ test.describe('Mutation testing estrutural PAGE-02 @mocked', () => {
     expect(mockedOracleFindings(to, comTg)).toContain('unexpected-tg');
   });
 
-  test('score das 21 UFs é reproduzível e mutações cobertas não sobrevivem no live', () => {
+  test('score das 21 UFs detecta o catálogo válido; erros não inflacionam o score', () => {
     const score = runStructuralMutations([...UFS_ESTRUTURAIS]);
     const survivors = summarizeSurvivors(score);
-    const liveSurvivors = survivors.filter((item) => item.suite === 'live');
-    expect(score.detected).toBe(378);
-    expect(score.survived).toBe(42);
+    expect(score.error).toBe(0);
     expect(score.invalid).toBe(42);
-    expect(score.score).toBeCloseTo(0.9, 4);
-    const mockedAsterisk = score.cases.filter(
-      (item) => item.kind === 'alter-asterisk' && item.suite === 'mocked' && item.verdict === 'survived',
-    );
-
-    expect(score.invalid).toBeGreaterThan(0);
-    expect(score.detected).toBeGreaterThan(0);
-    expect(score.score).toBeGreaterThan(0.7);
-    expect(liveSurvivors.filter((item) => item.kind === 'remove-chassi')).toEqual([]);
-    expect(liveSurvivors.filter((item) => item.kind === 'remove-gravame')).toEqual([]);
-    expect(liveSurvivors.filter((item) => item.kind === 'hide-placa')).toEqual([]);
-    expect(liveSurvivors.filter((item) => item.kind === 'change-zero-km-default')).toEqual([]);
-    expect(liveSurvivors.filter((item) => item.kind === 'add-tg')).toEqual([]);
-    expect(liveSurvivors.filter((item) => item.kind === 'remove-tg')).toEqual([]);
-    expect(mockedAsterisk.length).toBeGreaterThan(0);
+    expect(score.survived).toBe(0);
+    expect(survivors).toEqual([]);
+    expect(score.detected).toBe(420);
+    expect(score.score).toBe(1);
+    expect(score.cases.filter((item) => item.kind === 'alter-asterisk' && item.suite === 'mocked' && item.verdict === 'detected')).toHaveLength(21);
+    expect(score.cases.filter((item) => item.kind === 'remove-required-field' && item.suite === 'mocked' && item.verdict === 'detected')).toHaveLength(21);
   });
 
   test('SE fica fora do denominador: formulário indisponível', () => {
     const se = runStructuralMutations(['SE']);
     expect(se.detected).toBe(0);
     expect(se.survived).toBe(0);
+    expect(se.error).toBe(0);
     expect(se.invalid).toBeGreaterThan(0);
     expect(se.score).toBe(0);
   });

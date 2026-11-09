@@ -16,6 +16,7 @@ import {
   loadUfUiProfile,
   UfUiProfile,
 } from './ufUiProfile';
+import { camposCascaAssertaveis, headingRenderizavelNoMock } from './uiFormMock';
 
 export type Page02Mode = 'mocked' | 'live-readonly';
 
@@ -33,6 +34,45 @@ export async function assertSecoes(page: Page, headings: readonly string[]): Pro
 
 export async function assertSecoesMinimasMockadas(page: Page): Promise<void> {
   await assertSecoes(page, SECOES_MINIMAS_MOCK);
+}
+
+export async function assertSecoesInventarioMockadas(page: Page, profile: UfUiProfile): Promise<void> {
+  await assertSecoesMinimasMockadas(page);
+  const extras = profile.headings.filter(
+    (heading) => headingRenderizavelNoMock(heading) && !(SECOES_MINIMAS_MOCK as readonly string[]).includes(heading),
+  );
+  await assertSecoes(page, extras);
+}
+
+export async function assertObrigatoriosVisuaisMockados(page: Page, contrato: ContratoPage, profile: UfUiProfile): Promise<void> {
+  for (const field of camposCascaAssertaveis(profile)) {
+    await assertCampoUnicoVisivel(page, field);
+    await assertCampoVisual(contrato, field);
+  }
+}
+
+/**
+ * Casca mocked alinhada ao inventário live: seções, campos mapeados, `*` e TG/credor.
+ * Não usa a matriz Java como fonte visual.
+ */
+export async function assertCascaMockadaPorInventario(
+  page: Page,
+  contrato: ContratoPage,
+  profile: UfUiProfile,
+): Promise<void> {
+  await assertSecoesInventarioMockadas(page, profile);
+  await assertObrigatoriosVisuaisMockados(page, contrato, profile);
+  await assertTerceiroGarantidor(page, contrato, profile);
+  await assertCredorDocumentosMockados(page, profile);
+  if (profile.uf === 'CE') {
+    await assertEspecificosCe(page, contrato, profile);
+  }
+  if (profile.uf === 'MA') {
+    await assertEspecificosMa(page, contrato, profile);
+  }
+  if (profile.uf === 'RO') {
+    await assertEspecificosRo(page, contrato, profile);
+  }
 }
 
 export async function assertObrigatoriosVisuaisLive(contrato: ContratoPage, profile: UfUiProfile): Promise<void> {
@@ -137,6 +177,20 @@ export async function assertCredorDocumentos(page: Page, profile: UfUiProfile): 
     await expect(documentos).toBeVisible();
   } else {
     await expect(documentos).toHaveCount(0);
+  }
+}
+
+/**
+ * Mocked: Credor segue o inventário via `/form/credor`.
+ * Documentos não tem endpoint `/form` — no Angular mocked aparece em CE e some em BA.
+ * Live continua assertando o heading do inventário; mocked não trata isso como sinal estável.
+ */
+export async function assertCredorDocumentosMockados(page: Page, profile: UfUiProfile): Promise<void> {
+  const credor = page.getByRole('heading', { name: 'Credor', exact: true });
+  if (profile.credor) {
+    await expect(credor).toBeVisible();
+  } else {
+    await expect(credor).toHaveCount(0);
   }
 }
 

@@ -6,11 +6,10 @@ import { annotateMockedExecution, mockContratoCadastroApis } from '../../../supp
 import { installPersistGuard } from '../../../support/persistGuard';
 import { autenticarMasterLive, abrirPage02DestinoLive } from '../../../support/page02LiveSession';
 import {
+  assertCascaMockadaPorInventario,
   assertCascaPorInventario,
   assertLinhaVeiculoEstrutural,
-  assertSecoesMinimasMockadas,
   assertSemPersistenciaDefinitiva,
-  assertTerceiroGarantidor,
   perfilVisualUf,
   rastrearMutacoes,
 } from '../../../support/page02Structural';
@@ -18,8 +17,8 @@ import {
 const LIVE = process.env.PLAYWRIGHT_PAGE02_STRUCTURAL_LIVE === '1';
 
 /**
- * Spec estrutural PAGE-02 por UF. Diferenças de casca ficam no perfil live;
- * mocked valida seções mínimas + TG conforme inventário, sem submit persistente.
+ * Spec estrutural PAGE-02 por UF. Mocked alimenta `/form/*` pelo inventário live
+ * e valida casca + `*` + veículo, sem submit persistente.
  */
 export function definirTestesEstruturaisPage02(uf: string): void {
   const destino = destinoEstrutural(uf);
@@ -31,7 +30,7 @@ export function definirTestesEstruturaisPage02(uf: string): void {
     test.beforeEach(async ({ page }) => {
       annotateMockedExecution();
       await mockLoginApis(page);
-      await mockContratoCadastroApis(page, uf);
+      await mockContratoCadastroApis(page, uf, { formSource: 'ui' });
       await seedAuthenticatedSession(page);
     });
 
@@ -50,8 +49,7 @@ export function definirTestesEstruturaisPage02(uf: string): void {
 
       await contrato.acessar();
       await contrato.selecionarDestino(destino.nomeFantasia);
-      await assertSecoesMinimasMockadas(page);
-      await assertTerceiroGarantidor(page, contrato, ui);
+      await assertCascaMockadaPorInventario(page, contrato, ui);
       await assertLinhaVeiculoEstrutural(contrato, ui);
       await assertSemPersistenciaDefinitiva(page, contrato, log);
       await expect(contrato.submit).toBeEnabled();

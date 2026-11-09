@@ -124,16 +124,37 @@ export function annotateMockedExecution(): void {
   test.info().annotations.push({ type: 'tag', description: '@mocked' });
 }
 
+export type FormMockSource = 'java-or-ui' | 'ui';
+
+export interface ContratoCadastroMockOptions {
+  readonly formSource?: FormMockSource;
+}
+
 /**
  * Mock + persistGuard. Guard fica por último (LIFO) para abortar persistência real.
+ * `formSource: 'ui'` alimenta `/form/*` pelo inventário live (PAGE-02 estrutural).
+ * Registro persistente permanece em `java-or-ui`.
  */
-export async function mockContratoCadastroApis(page: Page, uf: string): Promise<string> {
-  const protocolo = await mockContratoCadastroApisOnly(page, uf);
+export async function mockContratoCadastroApis(
+  page: Page,
+  uf: string,
+  options: ContratoCadastroMockOptions = {},
+): Promise<string> {
+  const protocolo = await mockContratoCadastroApisOnly(page, uf, options);
   await installPersistGuard(page, { mode: 'mocked' });
   return protocolo;
 }
 
-function formPayloadForUf(uf: string): Pick<MatrizFixture, 'secoes' | 'campos'> {
+function formPayloadForUf(
+  uf: string,
+  formSource: FormMockSource = 'java-or-ui',
+): Pick<MatrizFixture, 'secoes' | 'campos'> {
+  if (formSource === 'ui') {
+    if (hasUfUiProfile(uf) && loadUfUiProfile(uf).formularioDisponivel) {
+      return formMockFromUiProfile(loadUfUiProfile(uf));
+    }
+    throw new MatrizIndisponivelError(uf);
+  }
   if (hasMatrizFixture(uf)) {
     return loadMatrizFixture(uf);
   }
@@ -143,13 +164,17 @@ function formPayloadForUf(uf: string): Pick<MatrizFixture, 'secoes' | 'campos'> 
   throw new MatrizIndisponivelError(uf);
 }
 
-export async function mockContratoCadastroApisOnly(page: Page, uf: string): Promise<string> {
+export async function mockContratoCadastroApisOnly(
+  page: Page,
+  uf: string,
+  options: ContratoCadastroMockOptions = {},
+): Promise<string> {
   if (uf === 'SE') {
     throw new MatrizIndisponivelError('SE');
   }
 
   const destino = destinoMock(uf);
-  const matriz = formPayloadForUf(uf);
+  const matriz = formPayloadForUf(uf, options.formSource ?? 'java-or-ui');
   const protocolo = protocoloRegistro(uf);
   const destinos = destinosComboMock();
 

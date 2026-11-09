@@ -6,10 +6,9 @@ import { annotateMockedExecution, mockContratoCadastroApis } from '../../../supp
 import { installPersistGuard } from '../../../support/persistGuard';
 import { autenticarMasterLive, abrirPage02DestinoLive } from '../../../support/page02LiveSession';
 import {
+  assertCascaMockadaPorInventario,
   assertCascaPorInventario,
   assertLinhaVeiculoEstrutural,
-  assertObrigatoriosVisuaisJavaBa,
-  assertSecoesMinimasMockadas,
   assertSemPersistenciaDefinitiva,
   perfilVisualBa,
   rastrearMutacoes,
@@ -24,7 +23,7 @@ test.describe('PAGE-02 BA estrutura visual @contrato @page02 @ba @mocked', () =>
   test.beforeEach(async ({ page }) => {
     annotateMockedExecution();
     await mockLoginApis(page);
-    await mockContratoCadastroApis(page, 'BA');
+    await mockContratoCadastroApis(page, 'BA', { formSource: 'ui' });
     await seedAuthenticatedSession(page);
   });
 
@@ -39,8 +38,7 @@ test.describe('PAGE-02 BA estrutura visual @contrato @page02 @ba @mocked', () =>
 
     await contrato.acessar();
     await contrato.selecionarDestino(BA.nomeFantasia);
-    await assertSecoesMinimasMockadas(page);
-    await assertObrigatoriosVisuaisJavaBa(contrato);
+    await assertCascaMockadaPorInventario(page, contrato, ui);
     await assertLinhaVeiculoEstrutural(contrato, ui);
     await assertSemPersistenciaDefinitiva(page, contrato, log);
     await expect(contrato.submit).toBeEnabled();

@@ -13,7 +13,8 @@ import { loadUfUiProfile, UfUiProfile } from './ufUiProfile';
 
 /**
  * Payload de `/form/*` derivado do inventário live — não é fixture Java.
- * Usado só quando a UF tem formulário UI e não existe `fixtures/matriz/{UF}.json`.
+ * Suíte estrutural mocked usa este payload para a casca coincidir com a UI.
+ * Registro persistente mocked continua na matriz Java.
  */
 export interface UiFormMock {
   readonly uf: string;
@@ -33,7 +34,7 @@ const SECAO_POR_HEADING: Record<string, string> = {
   'Terceiro garantidor': SECAO_TERCEIRO_GARANTIDOR,
 };
 
-const CAMPO_POR_ID: Record<string, readonly [string, string]> = {
+export const CAMPO_POR_ID: Record<string, readonly [string, string]> = {
   codigoAgenteFinanceiro: [SECAO_AGENTE, 'CODIGO_DETRAN'],
   nomeAgenteFinanceiro: [SECAO_AGENTE, 'NOME'],
   cnpjAgenteFinanceiro: [SECAO_AGENTE, 'NUMERO_DOCUMENTO'],
@@ -87,12 +88,12 @@ const CAMPO_POR_ID: Record<string, readonly [string, string]> = {
   credorTelefone: [SECAO_CREDOR, 'TEL_NUMERO'],
   credorEmail: [SECAO_CREDOR, 'EMAIL'],
   cotaConsorcio: [SECAO_COMPLEMENTARES, 'NUMERO_COTA_CONSORCIO'],
-  grupoConsorcio: [SECAO_COMPLEMENTARES, 'NUMERO_GRUPO_CONSORCIO'],
-  indiceComplementar: [SECAO_COMPLEMENTARES, 'INDICE'],
-  taxaMora: [SECAO_COMPLEMENTARES, 'TAXA_MORA'],
-  taxaMulta: [SECAO_COMPLEMENTARES, 'TAXA_MULTA'],
-  taxaContrato: [SECAO_COMPLEMENTARES, 'VALOR_TAXA_CONTRATO'],
-  totalTaxaAdmin: [SECAO_COMPLEMENTARES, 'TAXA_ADMINISTRATIVA'],
+  grupoConsorcio: [SECAO_COMPLEMENTARES, 'GRUPO_CONSORCIO'],
+  indiceComplementar: [SECAO_COMPLEMENTARES, 'INDICE_SIGLA'],
+  taxaMora: [SECAO_COMPLEMENTARES, 'MORA_TAXA'],
+  taxaMulta: [SECAO_COMPLEMENTARES, 'MULTA_TAXA'],
+  taxaContrato: [SECAO_COMPLEMENTARES, 'VALOR_TAC'],
+  totalTaxaAdmin: [SECAO_COMPLEMENTARES, 'TOTAL_TAXA_ADMIN'],
   correcaoMonetaria: [SECAO_COMPLEMENTARES, 'CORRECAO_MONETARIA'],
   terceiroCodigo: [SECAO_TERCEIRO_GARANTIDOR, 'CODIGO_DETRAN'],
   terceiroCnpj: [SECAO_TERCEIRO_GARANTIDOR, 'NUMERO_DOCUMENTO'],
@@ -199,12 +200,19 @@ export function formMockFromUiProfile(profile: UfUiProfile): UiFormMock {
     ...profile.veiculo.camposZeroKmSim,
     ...profile.veiculo.camposCondicionaisNaoZeroKm,
   ];
+  const veiculoPresentes = new Set<string>();
   for (const campo of veiculoCampos) {
     const java = VEICULO_POR_CONTROL[campo.formControl];
     if (!java) {
       continue;
     }
+    veiculoPresentes.add(java);
     setCampo(campos, SECAO_VEICULO, java, true, campo.requiredVisual);
+  }
+  for (const java of Object.values(VEICULO_POR_CONTROL)) {
+    if (!veiculoPresentes.has(java)) {
+      setCampo(campos, SECAO_VEICULO, java, false, false);
+    }
   }
 
   return {
@@ -218,4 +226,25 @@ export function formMockFromUiProfile(profile: UfUiProfile): UiFormMock {
 
 export function formMockFromUf(uf: string): UiFormMock {
   return formMockFromUiProfile(loadUfUiProfile(uf));
+}
+
+export function campoMapeadoNoFormMock(id: string | null | undefined): boolean {
+  return !!id && Object.prototype.hasOwnProperty.call(CAMPO_POR_ID, id);
+}
+
+/** Headings que o Angular mocked consegue pintar a partir de `/form/*`. Documentos não entra: a seção live não tem endpoint de form. */
+const HEADINGS_CASCA = new Set(['Registrar contrato', 'Destino', ...Object.keys(SECAO_POR_HEADING)]);
+
+export function headingRenderizavelNoMock(heading: string): boolean {
+  return HEADINGS_CASCA.has(heading);
+}
+
+/** Campos da casca que o mock Angular consegue renderizar a partir do inventário. */
+export function camposCascaAssertaveis(profile: UfUiProfile): UfUiProfile['fields'] {
+  return profile.fields.filter(
+    (field) =>
+      campoMapeadoNoFormMock(field.id) &&
+      field.secao !== 'Veículos' &&
+      field.secao !== 'Destino',
+  );
 }

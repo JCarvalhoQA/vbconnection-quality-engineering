@@ -6,11 +6,10 @@ import { annotateMockedExecution, mockContratoCadastroApis } from '../../../supp
 import { installPersistGuard } from '../../../support/persistGuard';
 import { autenticarMasterLive, abrirPage02DestinoLive } from '../../../support/page02LiveSession';
 import {
+  assertCascaMockadaPorInventario,
   assertCascaPorInventario,
   assertLinhaVeiculoEstrutural,
-  assertSecoesMinimasMockadas,
   assertSemPersistenciaDefinitiva,
-  assertTerceiroGarantidor,
   perfilVisualUf,
   rastrearMutacoes,
 } from '../../../support/page02Structural';
@@ -24,7 +23,7 @@ test.describe('PAGE-02 CE estrutura visual @contrato @page02 @ce @mocked', () =>
   test.beforeEach(async ({ page }) => {
     annotateMockedExecution();
     await mockLoginApis(page);
-    await mockContratoCadastroApis(page, 'CE');
+    await mockContratoCadastroApis(page, 'CE', { formSource: 'ui' });
     await seedAuthenticatedSession(page);
   });
 
@@ -38,8 +37,7 @@ test.describe('PAGE-02 CE estrutura visual @contrato @page02 @ce @mocked', () =>
 
     await contrato.acessar();
     await contrato.selecionarDestino(CE.nomeFantasia);
-    await assertSecoesMinimasMockadas(page);
-    await assertTerceiroGarantidor(page, contrato, ui);
+    await assertCascaMockadaPorInventario(page, contrato, ui);
     await assertLinhaVeiculoEstrutural(contrato, ui);
     await assertSemPersistenciaDefinitiva(page, contrato, log);
     await expect(contrato.submit).toBeEnabled();

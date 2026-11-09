@@ -1,8 +1,9 @@
 import { test, expect } from '@playwright/test';
 import { existsSync } from 'fs';
 import { join } from 'path';
-import { hasMatrizFixture, SECAO_TERCEIRO_GARANTIDOR, SECAO_VEICULO } from '../support/matrizLoader';
-import { formMockFromUf } from '../support/uiFormMock';
+import { hasMatrizFixture, SECAO_COMPLEMENTARES, SECAO_TERCEIRO_GARANTIDOR, SECAO_VEICULO } from '../support/matrizLoader';
+import { UFS_ESTRUTURAIS } from '../config/destinosEstruturais';
+import { camposCascaAssertaveis, formMockFromUf, headingRenderizavelNoMock } from '../support/uiFormMock';
 import { loadUfUiProfile } from '../support/ufUiProfile';
 
 test.describe('Mock /form a partir do inventário live @mocked', () => {
@@ -27,5 +28,30 @@ test.describe('Mock /form a partir do inventário live @mocked', () => {
 
   test('SE sem formulário não gera mock de form', () => {
     expect(() => formMockFromUf('SE')).toThrow(/sem formulário/);
+  });
+
+  test('BA mapeia Índice do inventário para INDICE_SIGLA, a chave que o Angular /form entende', () => {
+    const mock = formMockFromUf('BA');
+    expect(mock.campos[SECAO_COMPLEMENTARES].INDICE_SIGLA).toEqual([true, true]);
+    expect(mock.campos[SECAO_COMPLEMENTARES].GRUPO_CONSORCIO).toEqual([true, false]);
+    expect(mock.campos[SECAO_COMPLEMENTARES].MORA_TAXA).toEqual([true, false]);
+    expect(mock.campos[SECAO_VEICULO].TIPO_ESPECIE).toEqual([false, false]);
+  });
+
+  test('Documentos não entra no mock de headings — não há /form/documentos', () => {
+    expect(headingRenderizavelNoMock('Documentos')).toBe(false);
+    expect(headingRenderizavelNoMock('Credor')).toBe(true);
+    expect(headingRenderizavelNoMock('Agente financeiro')).toBe(true);
+    expect(headingRenderizavelNoMock('Terceiro garantidor')).toBe(true);
+  });
+
+  test('as 21 UFs têm campo obrigatório de casca mapeado no mock de form', () => {
+    for (const uf of UFS_ESTRUTURAIS) {
+      const profile = loadUfUiProfile(uf);
+      const casca = camposCascaAssertaveis(profile);
+      expect(casca.length, uf).toBeGreaterThan(0);
+      expect(casca.some((field) => field.requiredVisual), uf).toBe(true);
+      expect(formMockFromUf(uf).origem).toBe('LIVE_FIELD_INVENTORY');
+    }
   });
 });

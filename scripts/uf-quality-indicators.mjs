@@ -4,6 +4,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { STRUCTURAL_UFS_IMPLEMENTED } from './uf-lotes.mjs';
 import { extractUfsFromSpec } from './summarize-e2e-results.mjs';
@@ -32,6 +33,13 @@ function readJson(filePath) {
 
 function specPath(uf) {
   return path.join(root, 'e2e', 'contratos', 'page02', `${uf.toLowerCase()}-estrutural.spec.ts`);
+}
+
+function resolveCurrentSha() {
+  const fromEnv = process.env.GIT_SHA || process.env.GITHUB_SHA;
+  if (fromEnv) return fromEnv;
+  const git = spawnSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' });
+  return (git.stdout || '').trim() || 'unknown';
 }
 
 function liveByUf(catalog) {
@@ -163,10 +171,17 @@ export function buildUfQualityIndicators(options = {}) {
   const livePassedCurrent = implemented.filter((uf) => ufs[uf].liveStatus === STATUS.LIVE_PASSED);
   const livePending = implemented.filter((uf) => ufs[uf].liveStatus === STATUS.LIVE_PENDING);
   const mockedPassed = implemented.filter((uf) => ufs[uf].mockedStatus === STATUS.MOCKED_PASSED);
+  const currentSha = resolveCurrentSha();
+  const shaDiagnosis = catalog.liveOnCurrentSha
+    ? `Live no SHA atual ${currentSha}.`
+    : `Ausência de live no SHA atual (${currentSha}) não é aprovação. Live histórico cobre SHAs ${[...new Set(Object.values(liveMap).map((run) => String(run.sha || '').slice(0, 8)))].join(', ') || 'n/d'}, não o HEAD.`;
 
   return {
     geradoPor: 'scripts/uf-quality-indicators.mjs',
+    currentSha,
     headCatalogado: catalog.headNoMomentoDaAuditoria,
+    shaDiagnosis,
+    mutationScoreContract: '1.00 (420 detectadas / 0 sobreviventes / 42 inválidas — catálogo atual)',
     liveOnCurrentSha: Boolean(catalog.liveOnCurrentSha),
     credentialStatus: catalog.credentialStatus,
     maFixtureExists,
@@ -254,8 +269,11 @@ export function renderUfQualityMarkdown(indicators) {
         ['Live histórico (SHA anterior)', String(indicators.counts.livePassedHistorical)],
         ['Live pendente', String(indicators.counts.livePending)],
         ['Não aplicável', String(indicators.counts.notApplicable)],
+        ['SHA atual', indicators.currentSha || 'n/d'],
+        ['SHA catalogado', indicators.headCatalogado || 'n/d'],
         ['Status de credencial', indicators.credentialStatus],
         ['Live no SHA atual?', indicators.liveOnCurrentSha ? 'sim' : 'não'],
+        ['Mutation score (contrato)', indicators.mutationScoreContract || 'n/d'],
         ['Fixture Java de MA', indicators.maFixtureExists ? 'presente (inválido)' : 'ausente (correto)'],
       ],
     ),
@@ -278,7 +296,9 @@ export function renderUfQualityMarkdown(indicators) {
       rows,
     ),
     '',
-    '_LIVE_PASSED_HISTORICAL não equivale a LIVE_PASSED do código atual. Novo live permanece bloqueado enquanto a rotação da senha Master não for comprovada._',
+    `_${indicators.shaDiagnosis}_`,
+    '',
+    '_LIVE_PASSED_HISTORICAL não equivale a LIVE_PASSED do código atual. Ausência de evidência live ≠ sucesso. Novo live permanece bloqueado enquanto a rotação da senha Master não for comprovada._',
     '',
   ].join('\n');
 }

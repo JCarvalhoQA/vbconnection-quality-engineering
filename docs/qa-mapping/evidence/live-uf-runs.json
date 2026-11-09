@@ -1,15 +1,28 @@
 {
   "fonte": "GitHub Actions workflow_dispatch live-readonly em JCarvalhoQA/vbconnection-quality-engineering",
   "consultadoEm": "2026-11-09",
-  "headNoMomentoDaAuditoria": "90946ee74b59651faf99ee4869d6720c959b7a05",
-  "nota": "Evidência histórica. Nenhuma execução live-readonly cobriu o SHA atual após o merge do PR #13. Aprovação do Environment não encerra o incidente de credencial.",
+  "headNoMomentoDaAuditoria": "d4c4aa6a289822607baf5975060f0e52af170620",
+  "nota": "Evidência histórica. Nenhuma execução live-readonly cobriu o SHA atual após o merge do PR #14 (d4c4aa6). As 19 UFs LIVE_PASSED_HISTORICAL pertencem aos SHAs 83bcb5ed e a65997cc. Aprovação do Environment não encerra o incidente de credencial.",
   "liveOnCurrentSha": false,
   "credentialStatus": "BLOCKED_SECURITY_CREDENTIAL_ROTATION",
   "credentialNotes": [
-    "PLAYWRIGHT_MASTER_PASSWORD updated_at 2026-11-05T18:14:39Z, anterior ao artifact com exposição (run 42220549160).",
+    "PLAYWRIGHT_MASTER_PASSWORD updated_at 2026-11-05T18:14:39Z, anterior ao artifact com exposição (run 42220549160). Reconfirmado em 2026-11-09 após o merge do PR #14; o timestamp não mudou.",
     "Expiração periódica da senha Master não comprova invalidação da credencial antiga.",
     "Não há registro versionado de rotação posterior ao vazamento nem de aceitação formal de risco."
   ],
+  "postMerge": {
+    "pr14": {
+      "url": "https://github.com/JCarvalhoQA/vbconnection-quality-engineering/pull/14",
+      "mergedAt": "2026-11-09T14:14:34Z",
+      "mergeCommit": "d4c4aa6a289822607baf5975060f0e52af170620"
+    },
+    "ciMocked": {
+      "id": "42630718790",
+      "url": "https://github.com/JCarvalhoQA/vbconnection-quality-engineering/actions/runs/42630718790",
+      "conclusion": "success",
+      "event": "pull_request"
+    }
+  },
   "runs": [
     {
       "id": "42267723718",

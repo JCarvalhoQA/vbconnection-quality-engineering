@@ -308,12 +308,19 @@ export function summarizeReport(json, options = {}) {
   const total = passed + failed + skipped + flaky + notRun;
   const executed = passed + failed + flaky;
   const approved = passed + flaky;
+  let retries = 0;
+  for (const spec of specs) {
+    for (const test of spec.tests || []) {
+      retries += Math.max(0, (test.results || []).length - 1);
+    }
+  }
 
   return {
     passed,
     failed,
     skipped,
     flaky,
+    retries,
     notRun,
     total,
     executed,
@@ -474,7 +481,9 @@ export function renderSummary({ metrics, meta }) {
       ['Reprovados', String(metrics.failed)],
       ['Ignorados', String(metrics.skipped)],
       ['Flaky (passou após retry)', String(metrics.flaky)],
+      ['Retries extras', String(metrics.retries ?? 0)],
       ['Não executados', String(metrics.notRun)],
+      ['Início', metrics.startTime || 'n/d'],
       ['Duração', formatDuration(metrics.durationMs)],
       ['Taxa de aprovação', metrics.passRate],
     ]),
@@ -513,6 +522,7 @@ function main() {
         failed: 0,
         skipped: 0,
         flaky: 0,
+        retries: 0,
         notRun: 0,
         total: 0,
         executed: 0,

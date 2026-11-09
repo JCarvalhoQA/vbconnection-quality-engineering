@@ -51,6 +51,11 @@ function gate1ProjectIntegrity() {
       : failCheck('live-trace-off', 'Trace live não está off.'),
   );
   checks.push(
+    /serviceWorkers:\s*'block'/.test(config)
+      ? passCheck('sw-block', 'Service Workers bloqueados no Playwright.')
+      : failCheck('sw-block', 'serviceWorkers: block ausente no Playwright config.'),
+  );
+  checks.push(
     exists('support/persistGuard.ts')
       ? passCheck('persist-guard', 'persistGuard.ts presente.')
       : failCheck('persist-guard', 'persistGuard.ts ausente.'),

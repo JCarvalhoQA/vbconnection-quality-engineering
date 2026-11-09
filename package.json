@@ -30,7 +30,9 @@
     "test:mutation": "playwright test --config=playwright.unit.config.ts tests/structuralMutation.test.ts",
     "typecheck": "tsc --noEmit",
     "matriz:generate": "node scripts/generate-matriz-fixtures.mjs",
-    "matriz:compare": "node scripts/compare-mock-matriz.mjs"
+    "matriz:compare": "node scripts/compare-mock-matriz.mjs",
+    "quality:gates": "node scripts/quality-gates.mjs",
+    "quality:indicators": "node scripts/uf-quality-indicators.mjs"
   },
   "engines": {
     "node": ">=20"

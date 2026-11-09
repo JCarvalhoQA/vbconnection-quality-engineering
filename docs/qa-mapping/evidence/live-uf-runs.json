@@ -1,0 +1,48 @@
+{
+  "fonte": "GitHub Actions workflow_dispatch live-readonly em JCarvalhoQA/vbconnection-quality-engineering",
+  "consultadoEm": "2026-11-09",
+  "headNoMomentoDaAuditoria": "90946ee74b59651faf99ee4869d6720c959b7a05",
+  "nota": "Evidência histórica. Nenhuma execução live-readonly cobriu o SHA atual após o merge do PR #13. Aprovação do Environment não encerra o incidente de credencial.",
+  "liveOnCurrentSha": false,
+  "credentialStatus": "BLOCKED_SECURITY_CREDENTIAL_ROTATION",
+  "credentialNotes": [
+    "PLAYWRIGHT_MASTER_PASSWORD updated_at 2026-11-05T18:14:39Z, anterior ao artifact com exposição (run 42220549160).",
+    "Expiração periódica da senha Master não comprova invalidação da credencial antiga.",
+    "Não há registro versionado de rotação posterior ao vazamento nem de aceitação formal de risco."
+  ],
+  "runs": [
+    {
+      "id": "42267723718",
+      "url": "https://github.com/JCarvalhoQA/vbconnection-quality-engineering/actions/runs/42267723718",
+      "sha": "83bcb5ed0fdf42d5cebf87682925999d3c1dd62f",
+      "event": "workflow_dispatch",
+      "mode": "live-readonly",
+      "suite": "structural",
+      "ufs": ["AC", "AP", "BA", "CE", "DF", "ES", "MG", "MS", "MT", "PB", "PE", "PR", "RJ", "RN", "RO"],
+      "resultado": "success",
+      "classificacao": "LIVE_PASSED_HISTORICAL",
+      "coberturaDoCodigoAtual": false
+    },
+    {
+      "id": "42281730173",
+      "url": "https://github.com/JCarvalhoQA/vbconnection-quality-engineering/actions/runs/42281730173",
+      "sha": "a65997ccc61e994a0802dec262a7d775f5f3a9d5",
+      "event": "workflow_dispatch",
+      "mode": "live-readonly",
+      "suite": "structural",
+      "ufs": ["RR", "RS", "SC", "SP"],
+      "resultado": "success",
+      "classificacao": "LIVE_PASSED_HISTORICAL",
+      "coberturaDoCodigoAtual": false,
+      "nota": "Lote 4 isolado. Não é regressão acumulada das 19 UFs nem das 21."
+    }
+  ],
+  "pending": ["MA", "TO"],
+  "pendingReason": "MA_TO_LIVE_PENDING",
+  "notApplicable": ["SE"],
+  "notApplicableReason": "Formulário PAGE-02 indisponível (GATE3).",
+  "acumulado21": {
+    "status": "PENDING",
+    "motivo": "MA e TO sem live; 19 UFs históricas em dois jobs e SHAs anteriores; live bloqueado por credencial."
+  }
+}

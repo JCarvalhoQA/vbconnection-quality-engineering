@@ -103,6 +103,9 @@ jobs:
       - name: Unit tests
         run: npm run test:unit
 
+      - name: Quality gates
+        run: npm run quality:gates
+
       - name: Validate suite selection
         id: select
         run: node scripts/ci-select.mjs
@@ -129,6 +132,12 @@ jobs:
           PLAYWRIGHT_LOTE: ${{ steps.select.outputs.lote }}
         run: node scripts/summarize-e2e-results.mjs
 
+      - name: Quality gates after e2e
+        if: always()
+        env:
+          QUALITY_GATES_REQUIRE_E2E: '1'
+        run: npm run quality:gates
+
       - name: Upload reports
         if: always()
         uses: actions/upload-artifact@v6
@@ -139,6 +148,9 @@ jobs:
             test-results/e2e-results.json
             test-results/e2e-junit.xml
             test-results/e2e-summary.md
+            test-results/quality-gates.json
+            test-results/quality-gates.md
+            test-results/uf-quality-indicators.json
             test-results/**/trace.zip
             test-results/**/*.png
             test-results/**/error-context.md
@@ -180,6 +192,9 @@ jobs:
 
       - name: Typecheck
         run: npm run typecheck
+
+      - name: Quality gates
+        run: npm run quality:gates
 
       - name: Validate suite selection
         id: select
@@ -233,6 +248,9 @@ jobs:
             test-results/e2e-results.json
             test-results/e2e-junit.xml
             test-results/e2e-summary.md
+            test-results/quality-gates.json
+            test-results/quality-gates.md
+            test-results/uf-quality-indicators.json
             test-results/**/*.png
             test-results/**/error-context.md
           if-no-files-found: warn

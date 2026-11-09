@@ -360,4 +360,14 @@ assert.deepEqual(partial.ufs.executed, ['MG', 'MS', 'PB']);
 assert.deepEqual(partial.ufs.notRun, []);
 assert.equal(partial.failures[0].kind, 'falha-locator');
 
+const repoRoot = path.join(root, '..');
+const gates = spawnSync(process.execPath, [path.join(root, 'quality-gates.mjs')], {
+  cwd: repoRoot,
+  encoding: 'utf8',
+  env: { ...process.env, PLAYWRIGHT_MODE: 'mocked' },
+});
+assert.equal(gates.status, 0, gates.stderr || gates.stdout);
+assert.match(gates.stdout, /gate-6-live/);
+assert.match(gates.stdout, /LIVE_PENDING/);
+
 console.log('validate-pipeline-local: canários locais aprovados');

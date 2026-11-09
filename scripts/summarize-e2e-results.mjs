@@ -371,6 +371,35 @@ function formatDuration(ms) {
   return `${minutes}m ${rest}s`;
 }
 
+function readQualityMarkdown() {
+  const gatesPath = path.resolve('test-results/quality-gates.md');
+  if (fs.existsSync(gatesPath)) {
+    return fs.readFileSync(gatesPath, 'utf8').trim();
+  }
+  const indicatorsPath = path.resolve('test-results/uf-quality-indicators.json');
+  if (!fs.existsSync(indicatorsPath)) {
+    return '';
+  }
+  try {
+    const indicators = JSON.parse(fs.readFileSync(indicatorsPath, 'utf8'));
+    const counts = indicators.counts || {};
+    return [
+      '### Quality Gate Summary',
+      '',
+      markdownTable([
+        ['UFs implementadas', String(counts.implemented ?? 'n/d')],
+        ['Mocked aprovadas nesta evidência', String(counts.mockedPassed ?? 'n/d')],
+        ['Live no SHA atual', String(counts.livePassedCurrent ?? 'n/d')],
+        ['Live histórico', String(counts.livePassedHistorical ?? 'n/d')],
+        ['Live pendente', String(counts.livePending ?? 'n/d')],
+        ['Credencial', indicators.credentialStatus || 'n/d'],
+      ]),
+    ].join('\n');
+  } catch {
+    return '';
+  }
+}
+
 export function renderSummary({ metrics, meta }) {
   const failureLines = metrics.failures.length
     ? metrics.failures
@@ -461,6 +490,8 @@ export function renderSummary({ metrics, meta }) {
     '### Flaky',
     '',
     flakyLines,
+    '',
+    readQualityMarkdown(),
     '',
   ].join('\n');
 }

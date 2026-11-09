@@ -93,7 +93,10 @@ test.describe('E2 persistGuard @mocked', () => {
   test('GET em URL de persistência não é abortado — limitação documentada de efeito colateral', () => {
     expect(shouldAbortPersist('GET', 'https://host/api/contratos/registrar', 'live-readonly')).toBe(false);
     expect(shouldAbortPersist('GET', 'https://host/api/imagens/upload', 'live-readonly')).toBe(false);
+    expect(shouldAbortPersist('GET', 'https://host/api/contratos/123', 'live-readonly')).toBe(false);
+    expect(shouldAbortPersist('GET', 'https://host/api/gravames', 'live-readonly')).toBe(false);
     expect(isPersistUrl('https://host/api/contratos/registrar')).toBe(true);
+    expect(shouldAbortPersist('POST', 'https://host/api/contratos/123', 'live-readonly')).toBe(true);
   });
 
   test('mocked aborta persistência fora de registrar e deixa consultas de configuração passarem', () => {

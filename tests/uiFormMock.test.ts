@@ -45,6 +45,16 @@ test.describe('Mock /form a partir do inventário live @mocked', () => {
     expect(headingRenderizavelNoMock('Terceiro garantidor')).toBe(true);
   });
 
+  test('BA e CE declaram Documentos no inventário, mas o mock não trata o heading como estável', () => {
+    const ba = loadUfUiProfile('BA');
+    const ce = loadUfUiProfile('CE');
+    expect(ba.documentos).toBe(true);
+    expect(ce.documentos).toBe(true);
+    expect(ba.headings).toContain('Documentos');
+    expect(ce.headings).toContain('Documentos');
+    expect(headingRenderizavelNoMock('Documentos')).toBe(false);
+  });
+
   test('as 21 UFs têm campo obrigatório de casca mapeado no mock de form', () => {
     for (const uf of UFS_ESTRUTURAIS) {
       const profile = loadUfUiProfile(uf);

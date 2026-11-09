@@ -38,5 +38,7 @@ test.describe('Quality gates PAGE-02 @mocked', () => {
     expect(indicators.credentialStatus).toBe('BLOCKED_SECURITY_CREDENTIAL_ROTATION');
     expect(indicators.liveOnCurrentSha).toBe(false);
     expect(indicators.se.liveStatus).toBe('NOT_APPLICABLE');
+    expect(indicators.shaDiagnosis).toMatch(/não é aprovação/i);
+    expect(indicators.headCatalogado).toMatch(/^d4c4aa6/);
   });
 });

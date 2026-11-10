@@ -43,4 +43,20 @@ export class ContratoActions {
     await this.contratoPage.esperarRegistroComSucesso(protocolo);
     return mass;
   }
+
+  async registrarContratoComPayload(
+    uf: DetranUf,
+    config: DetranConfig,
+    protocolo: string,
+  ): Promise<ContratoRegistroMass> {
+    const mass = this.gerarDadosContrato(uf);
+    await this.contratoPage.acessar();
+    await this.contratoPage.selecionarDetran(config);
+    await this.preencherRegistro(mass, config);
+    await this.contratoPage.esperarRegistroFuncional(protocolo, {
+      chassi: mass.veiculo.chassi,
+      numero: mass.contrato.numero,
+    });
+    return mass;
+  }
 }

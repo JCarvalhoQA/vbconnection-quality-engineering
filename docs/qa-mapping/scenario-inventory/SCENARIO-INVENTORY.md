@@ -2,7 +2,7 @@
 
 Fonte: specs em `e2e/`, POM/`support/`, `docs/qa-mapping/scenarios/SCENARIO-MATRIX.md`, páginas, inventário live, matriz Java. SHA `60afe1163606a4cb42d18d6bfbf0e1720585ba82`.
 
-Não cria cenário novo. Alias `SCN-*` aponta para a matriz antiga; IDs `CT-*` são canônicos. Os 83 são cenários lógicos, não instâncias de execução nem assertions isoladas.
+IDs canônicos `CT-001`–`CT-086`. Os 83 originais foram preservados; a Etapa 18 adicionou CT-084–CT-086 (Confluence DETRAN-BA) após checagem de duplicidade. São cenários lógicos, não instâncias de execução nem assertions isoladas.
 
 ## Metodologia
 
@@ -29,11 +29,12 @@ Não cria cenário novo. Alias `SCN-*` aponta para a matriz antiga; IDs `CT-*` s
 | PAGE-06 Aditivo lote | CT-075–CT-076 | 2 |
 | PAGE-07 Imagem lote | CT-077 | 1 |
 | PAGE-08 Imagem por tela | CT-078–CT-083 | 6 |
-| **Total** | | **83** |
+| PAGE-02 Confluence BA (etapa 18) | CT-084–CT-086 | 3 |
+| **Total** | | **86** |
 
-Status de automação exclusivo (CSV): Automatizado 42 · Parcialmente 4 · Apenas mapeado 30 · Bloqueado 4 · Não aplicável 3 = **83**. Etapa 16: CT-052 e CT-053 saíram de mapeado para automatizado mocked. Os sete (Bloqueado 4 + Não aplicável 3) permanecem. Detalhe: `EXECUTIVE-SUMMARY.md`.
+Status de automação exclusivo (CSV): Automatizado 45 · Parcialmente 4 · Apenas mapeado 30 · Bloqueado 4 · Não aplicável 3 = **86**. Etapa 18: CT-084–086 novos e automatizados mocked; CT-047 ganhou assert de payload; CT-053 ganhou instâncias 400/503. PAGE-07/08 continuam sem spec funcional de upload. Detalhe: `EXECUTIVE-SUMMARY.md`.
 
-Tabela completa (Excel/Jira): `SCENARIO-INVENTORY.csv` (UTF-8 BOM, 83 linhas de dados, 16 colunas).
+Tabela completa (Excel/Jira): `SCENARIO-INVENTORY.csv` (UTF-8 BOM, 86 linhas de dados, 16 colunas).
 
 ### Recorte da matriz (cenários reais)
 
@@ -44,10 +45,13 @@ Tabela completa (Excel/Jira): `SCENARIO-INVENTORY.csv` (UTF-8 BOM, 83 linhas de 
 | CT-029 | PAGE-02 | Casca visual | 21 UFs | Estrutural | Automatizado | Mocked; live hist. 19 | `definirEstruturalPage02.ts` + `page02Structural.ts` |
 | CT-031 | PAGE-02 | Novo/usado visível | BA | Estrutural; condicional | Automatizado | Mocked + live hist. | inventário + `expectNovoUsado` |
 | CT-046 | PAGE-02 | Submit sem veículo | 18 UFs | Funcional negativo | Automatizado | Mocked | `validarCamposObrigatorios` |
-| CT-047 | PAGE-02 | Registro feliz mock | 18 UFs | Funcional positivo | Automatizado | Mocked | `registro-contrato.flow.ts` |
+| CT-047 | PAGE-02 | Registro feliz mock | 18 UFs | Funcional positivo | Automatizado | Mocked | `registro-contrato.flow.ts` + payload BA |
 | CT-050 | PAGE-02 | Chassi ≠ 17 | — | Funcional negativo | Apenas mapeado | — | `RULE_NOT_CONFIRMED` |
 | CT-052 | PAGE-02 | Tab no datepicker não registra | BA | Funcional negativo | Automatizado | Mocked | `contrato-negativos.spec.ts` |
-| CT-053 | PAGE-02 | POST registrar 500 | BA | Integração mocked | Automatizado | Mocked | `api-negativos.spec.ts` |
+| CT-053 | PAGE-02 | POST registrar 400/500/503 | BA | Integração mocked | Automatizado | Mocked | `api-negativos.spec.ts` + `contrato-excecoes.spec.ts` |
+| CT-084 | PAGE-02 | Gravame maxLength 8 | BA | Funcional negativo | Automatizado | Mocked | `contrato-negativo.spec.ts` |
+| CT-085 | PAGE-02 | Parcelas sem negativo | BA | Funcional negativo | Automatizado | Mocked | `contrato-negativo.spec.ts` |
+| CT-086 | PAGE-02 | Financiamento sem negativo | BA | Funcional negativo | Automatizado | Mocked | `contrato-negativo.spec.ts` |
 | CT-057 | PAGE-02 | Envio B3 | — | Integração | Apenas mapeado | — | sem `DadosForm` |
 | CT-063 | PAGE-03 | Busca protocolo existente | — | Funcional | Apenas mapeado | — | `aditivo-inserir.md` |
 | CT-068 | PAGE-04 | Destino RS disabled | RS | Estrutural | Apenas mapeado | — | v2 `AditivoFormRsComponent` |

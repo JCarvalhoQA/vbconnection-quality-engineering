@@ -3,14 +3,14 @@
 **SHA da `main`:** `7edfed2ee2f3d297075e3c0a0fd2afad86f0ba79` (2026-11-10, merge PR #16)
 **Método:** cenário lógico canônico ≠ instância por UF ≠ `test()` ≠ execução. Assertions isoladas não entram na conta.
 
-Os **83** IDs `CT-001`–`CT-083` são cenários lógicos canônicos. Não são instâncias de execução (21 UFs × casca) nem assertions individuais (`*` por campo, `expectNovoUsado`, etc.).
+Os IDs `CT-001`–`CT-083` permanecem. A Etapa 18 adicionou **CT-084–CT-086** (regras Confluence DETRAN-BA, sem duplicar os 83). Total **86** lógicos. Não são instâncias de execução (21 UFs × casca) nem assertions individuais.
 
 ## 1. Total de cenários
 
 | Métrica | Qtd |
 |---|---:|
-| Cenários lógicos únicos | **83** |
-| IDs | CT-001 … CT-083 |
+| Cenários lógicos únicos | **86** |
+| IDs | CT-001 … CT-086 |
 | Duplicidades | 0 |
 | Polaridade N/A (sem positivo/negativo) | 3 |
 
@@ -30,22 +30,23 @@ Os **83** IDs `CT-001`–`CT-083` são cenários lógicos canônicos. Não são 
 | PAGE-06 Aditivo lote | CT-075–CT-076 | 2 |
 | PAGE-07 Imagem lote | CT-077 | 1 |
 | PAGE-08 Imagem por tela | CT-078–CT-083 | 6 |
-| **Total** | | **83** |
+| PAGE-02 Confluence BA (etapa 18) | CT-084–CT-086 | 3 |
+| **Total** | | **86** |
 
 No repositório, **PAGE-08** é *imagem por tela* (`docs/qa-mapping/pages/imagem-tela.md`). A Home do enunciado legado foi catalogada como **PAGE-HOME**, para não colidir com PAGE-08.
 
-No CSV, Consulta / Clientes / Telas padrão aparecem como `PAGE-CONSULTA`, `PAGE-CLIENTES` e `PAGE-PADRAO` (3 linhas). PAGE-02 soma 36 lógicos (2 + 16 + 18).
+No CSV, Consulta / Clientes / Telas padrão aparecem como `PAGE-CONSULTA`, `PAGE-CLIENTES` e `PAGE-PADRAO` (3 linhas). PAGE-02 soma 39 lógicos (2 + 16 + 18 + 3).
 
 ## 3. Distribuição por status de automação (mutuamente exclusiva)
 
 | Status | Qtd | Comentário |
 |---|---:|---|
-| Automatizado | 42 | Inclui CT-052 e CT-053 (etapa 16, mocked) |
+| Automatizado | 45 | Inclui CT-052/053 (etapa 16) e CT-084–086 (etapa 18) |
 | Parcialmente automatizado | 4 | CT-036 Documentos; CT-038 tipoEspecie; CT-048 PR; CT-049 PB |
 | Apenas mapeado | 30 | Docs/Gherkin/código v2, sem spec NX da intenção |
 | Bloqueado | 4 | CT-010, CT-016, CT-023, CT-058 |
 | Não aplicável | 3 | CT-040, CT-059, CT-062 |
-| **Total** | **83** | 42 + 4 + 30 + 4 + 3 |
+| **Total** | **86** | 45 + 4 + 30 + 4 + 3 |
 
 Etapa 16: 2 dos 17 negativos mapeados viraram Automatizado. Os **sete** (Bloqueado + Não aplicável) permanecem.
 
@@ -56,9 +57,9 @@ Status de automação **não** se mistura com polaridade (positivo/negativo) nem
 | Polaridade | Qtd |
 |---|---:|
 | Positivo | 55 |
-| Negativo | 25 |
+| Negativo | 28 |
 | Sem polaridade (`—`) | 3 (CT-040, CT-059, CT-062) |
-| **Total** | **83** |
+| **Total** | **86** |
 
 Negativos em status exclusivo: 9 Automatizado + 1 Bloqueado (`test.fixme` CT-016) + 15 Apenas mapeado = 25.
 

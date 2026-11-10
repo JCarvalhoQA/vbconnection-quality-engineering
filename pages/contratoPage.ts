@@ -1,6 +1,7 @@
 import { expect, Locator, Page } from '@playwright/test';
 import type { ContratoRegistroMass } from '../fixtures/contrato';
 import type { DetranConfig } from '../config/detransIds';
+import { interpretarPostData, payloadContemCampo } from '../support/registrarPayload';
 import { FormPage } from './common/formPage';
 import { VeiculoSection } from './fragments/veiculoSection';
 import { gotoApp, hideThirdPartyOverlays } from '../support/navigation';
@@ -369,6 +370,43 @@ export class ContratoPage extends FormPage {
     expect(response.ok()).toBeTruthy();
     const body = (await response.json()) as { protocolo?: string; status?: string };
 
+    expect(body.protocolo).toBe(protocolo);
+    expect(body.status).toBe('RECEBIDO');
+    await expect(this.page.getByText('Contrato registrado com sucesso.')).toBeVisible();
+  }
+
+  /**
+   * CT-047 funcional: além do sucesso da UI, observa método, URL e campos no POST interceptado.
+   */
+  async esperarRegistroFuncional(
+    protocolo: string,
+    esperados: { chassi: string; numero: string },
+  ): Promise<void> {
+    const [request, response] = await Promise.all([
+      this.page.waitForRequest(
+        (req) => req.method() === 'POST' && req.url().includes('contratos/registrar'),
+        { timeout: 15_000 },
+      ),
+      this.page.waitForResponse(
+        (res) => res.url().includes('contratos/registrar') && res.request().method() === 'POST',
+        { timeout: 15_000 },
+      ),
+      this.enviarContrato(),
+    ]);
+
+    expect(request.method()).toBe('POST');
+    expect(request.url()).toContain('contratos/registrar');
+    const visto = interpretarPostData(request.postData());
+    expect(visto.bruto.length, 'POST registrar sem corpo').toBeGreaterThan(0);
+    expect(payloadContemCampo(visto.bruto, esperados.chassi), `payload sem chassi ${esperados.chassi}`).toBe(
+      true,
+    );
+    expect(payloadContemCampo(visto.bruto, esperados.numero), `payload sem número ${esperados.numero}`).toBe(
+      true,
+    );
+
+    expect(response.status()).toBe(200);
+    const body = (await response.json()) as { protocolo?: string; status?: string };
     expect(body.protocolo).toBe(protocolo);
     expect(body.status).toBe('RECEBIDO');
     await expect(this.page.getByText('Contrato registrado com sucesso.')).toBeVisible();

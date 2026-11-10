@@ -17,7 +17,7 @@ Sem live no SHA atual e sem Master regularizado, a suíte **não detecta regress
 |---|---|---|---|---|---|
 | PAGE-02 negativo chassi | Tamanho/duplicidade | CT-050, CT-060 | Não | Massa só gera 17 chars; DETRAN não é exercido | **P1** |
 | PAGE-02 documento inválido | CPF/CNPJ | CT-051 | Não | Sem blur/submit negativo | **P1** |
-| PAGE-02 5xx / timeout | Erro API / VA-1585 | CT-053, CT-054 | Não | Falso verde se HMG cair | **P1** |
+| PAGE-02 timeout DETRAN | VA-1585 | CT-054 | Não | CT-053 cobre mock 500; timeout continua hipótese | **P1** |
 | PAGE-02 permissão | CONTRATO_EDITAR | CT-055 | Não | Guard Nova UX não testado | **P1** |
 | PAGE-02 Documentos | Heading estável | CT-036 | Só live | Mocked não detecta regressão de Documentos | **P1** |
 | PAGE-03 aditivo | Busca protocolo / tipo por UF | CT-063–067 | Não | Tela sem POM NX | **P1** |
@@ -25,7 +25,7 @@ Sem live no SHA atual e sem Master regularizado, a suíte **não detecta regress
 | PAGE-05 lote | Nome de arquivo / não POST | CT-070–074 | Não | persistGuard ajuda; UI lote não | **P1** |
 | PAGE-08 imagens por tela | Limites MT/SC/MS | CT-080–082 | Não | Risco de upload indevido se live | **P1** |
 
-Automatizar P1 só depois de confirmar a regra na UI. CT-050/051/053/054/055/060 continuam `RULE_NOT_CONFIRMED` até evidência de produto.
+Automatizar P1 só depois de confirmar a regra na UI. CT-050/051/054/055/060 continuam `RULE_NOT_CONFIRMED`. CT-053 está automatizado como `MOCKED_API_REJECTION` (não é DETRAN).
 
 ## P2 — pendências, integração mapeada, fora do caminho crítico imediato
 

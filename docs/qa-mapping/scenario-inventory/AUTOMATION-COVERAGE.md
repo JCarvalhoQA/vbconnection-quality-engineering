@@ -6,14 +6,14 @@ Status de automação é **mutuamente exclusivo** e totaliza 83. Polaridade (pos
 
 | Status | Qtd | IDs / recorte |
 |---|---:|---|
-| Automatizado | 40 | Spec Playwright exerce a intenção |
+| Automatizado | 42 | Spec Playwright exerce a intenção (inclui CT-052 e CT-053, etapa 16) |
 | Parcialmente automatizado | 4 | CT-036, CT-038, CT-048, CT-049 |
-| Apenas mapeado | 32 | CT-012; CT-050–057; CT-060–061; CT-063–083 |
+| Apenas mapeado | 30 | CT-012; CT-050–051; CT-054–057; CT-060–061; CT-063–083 |
 | Bloqueado | 4 | CT-010, CT-016, CT-023, CT-058 |
 | Não aplicável | 3 | CT-040, CT-059, CT-062 |
-| **Total** | **83** | 40 + 4 + 32 + 4 + 3 |
+| **Total** | **83** | 42 + 4 + 30 + 4 + 3 |
 
-Leitura anterior **40 + 4 + 32 = 76** omitiu Bloqueado e Não aplicável. Os sete não são uma sexta faixa “pendente”.
+Leitura anterior **40 + 4 + 32 = 76** omitiu Bloqueado e Não aplicável. Etapa 16 moveu CT-052 e CT-053 de mapeado para automatizado. Os sete (4+3) não são “pendentes”.
 
 ### Parciais (4)
 
@@ -48,13 +48,13 @@ Contagem **primária** no CSV (`tipo`, primeiro token) não substitui o status d
 - Estrutural / navegação smoke: login UI, home, telas, casca PAGE-02.
 - Funcional positivo: login admin, registro feliz 18 UFs.
 - Funcional negativo: login e submit sem veículo.
-- Integração **aprovada contra sistema externo:** 0. Integração **mockada:** CT-011. Integração **mapeada:** B3, DETRAN timeout, 5xx.
+- Integração **aprovada contra sistema externo:** 0. Integração **mockada:** CT-011, CT-053. Integração **mapeada:** B3, DETRAN timeout.
 
 ## Ambiente (implementação × evidência)
 
 | Ambiente | Lógicos com implementação | Execução comprovada |
 |---|---|---|
-| Mocked | 44 (40 + 4 parciais no job mocked) | CI [42635151327](https://github.com/JCarvalhoQA/vbconnection-quality-engineering/actions/runs/42635151327) success |
+| Mocked | 46 (42 + 4 parciais no job mocked) | Local etapa 16: 102 passed / 3 skipped; CI do PR confirma |
 | Live-readonly | 21 specs estruturais + gates 0–3 | 19 UFs históricas; **0** no SHA `60afe11` |
 | Não definido | mapeados PAGE-03..08 | `NOT_VERIFIED` |
 
@@ -62,7 +62,7 @@ Gates CT-041–CT-044: Automatizado no código, `test.skip` sem flags, `NOT_VERI
 
 ## O que a regressão mocked realmente corre
 
-`playwright-tests.yml` no PR: `--grep-invert @live-readonly` → ~100 passed / 3 skipped (2× SE registro + 1 fixme recuperação). Isso **não** inclui live PAGE-02.
+`playwright-tests.yml` no PR: `--grep-invert @live-readonly` → **102 passed / 3 skipped** (2× SE registro + 1 fixme recuperação) na etapa 16 local. Isso **não** inclui live PAGE-02.
 
 ## Distinções obrigatórias
 

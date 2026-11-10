@@ -18,12 +18,12 @@ Status **exclusivo** no CSV:
 
 | Status de automação | Qtd | IDs |
 |---|---:|---|
-| Automatizado | 7 | CT-002, CT-003, CT-004, CT-006, CT-011, CT-014, CT-046 |
+| Automatizado | 9 | CT-002, CT-003, CT-004, CT-006, CT-011, CT-014, CT-046, CT-052, CT-053 |
 | Bloqueado (`test.fixme`) | 1 | CT-016 |
-| Apenas mapeado | 17 | CT-050–055, CT-060–061, CT-064, CT-070, CT-072–073, CT-075, CT-077, CT-080–082 |
+| Apenas mapeado | 15 | CT-050–051, CT-054–055, CT-060–061, CT-064, CT-070, CT-072–073, CT-075, CT-077, CT-080–082 |
 | **Total negativos** | **25** | |
 
-Leitura equivalente, **não exclusiva**: 8 com artefato de teste (os 7 + CT-016) · 1 fixme (CT-016) · 17 só mapeados.
+Etapa 16 automatizou CT-052 e CT-053. Leitura antiga “7+1+17” deixa de valer.
 
 Nenhum negativo está em Parcialmente automatizado ou Não aplicável.
 
@@ -38,6 +38,8 @@ Nenhum negativo está em Parcialmente automatizado ou Não aplicável.
 | CT-011 | Falha de rede no token | `login-fluxos.spec.ts` | MOCKED_PASSED (mock abort) |
 | CT-014 | Recuperação usuário vazio | `login-recuperacao.spec.ts` | MOCKED_PASSED |
 | CT-046 | Registrar sem veículo | `validarCamposObrigatorios` × 18 UFs | MOCKED_PASSED |
+| CT-052 | Tab no datepicker não registra | `contrato-negativos.spec.ts` | MOCKED_PASSED (BA). Não afirma copy de data inválida. |
+| CT-053 | POST registrar 500 | `api-negativos.spec.ts` | MOCKED_PASSED (BA). Sem copy de 5xx inventada. |
 
 ## Bloqueado (fixme — não somar com a tabela acima)
 
@@ -45,14 +47,12 @@ Nenhum negativo está em Parcialmente automatizado ou Não aplicável.
 |---|---|---|---|
 | CT-016 | Recuperação API 500 | `login-recuperacao.spec.ts` | `SKIPPED_FIXME` — UI newfront não atualiza |
 
-## Mapeados, não automatizados (17)
+## Mapeados, não automatizados (15)
 
 | ID | Tema | Status da regra |
 |---|---|---|
 | CT-050 | Chassi ≠ 17 | RULE_NOT_CONFIRMED |
 | CT-051 | CPF/CNPJ inválido | RULE_NOT_CONFIRMED |
-| CT-052 | Data inválida / Enter no datepicker | CONFIRMADO no mapeamento antigo; **sem spec negativa** |
-| CT-053 | POST registrar 5xx | RULE_NOT_CONFIRMED (candidato a mock) |
 | CT-054 | Timeout DETRAN | RULE_NOT_CONFIRMED |
 | CT-055 | Sem permissão CONTRATO_EDITAR | RULE_NOT_CONFIRMED (inferido v2) |
 | CT-060 | Chassi duplicado DETRAN | RULE_NOT_CONFIRMED (hipótese explícita) |
@@ -74,11 +74,11 @@ Nenhum negativo está em Parcialmente automatizado ou Não aplicável.
 | Autenticação / sessão | CT-002, CT-003, CT-004, CT-006, CT-014, CT-016 | 6 |
 | Campos obrigatórios | CT-046 | 1 |
 | Falha HTTP / rede | CT-011, CT-053 | 2 |
+| Datepicker (não submete) | CT-052 | 1 |
 | Timeout | CT-054 | 1 |
 | Permissões | CT-055 | 1 |
 | Chassi | CT-050, CT-060 | 2 |
 | Documentos (CPF/CNPJ) | CT-051 | 1 |
-| Datas | CT-052 | 1 |
 | Valores | CT-061 | 1 |
 | Aditivo | CT-064 | 1 |
 | Lote / arquivo | CT-070, CT-072, CT-073, CT-075, CT-077 | 5 |

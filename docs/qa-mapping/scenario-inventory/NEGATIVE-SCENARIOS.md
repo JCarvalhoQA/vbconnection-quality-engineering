@@ -2,7 +2,7 @@
 
 Não inventa resultado esperado. `RULE_NOT_CONFIRMED` = mencionado sem regra de UI confirmada.
 
-Total no CSV (`positivo_negativo = negativo`): **25**. Polaridade é eixo separado do status de automação.
+Total no CSV (`positivo_negativo = negativo`): **28**. Polaridade é eixo separado do status de automação.
 
 ## Metodologia da contagem (não somar faixas sobrepostas)
 
@@ -18,10 +18,10 @@ Status **exclusivo** no CSV:
 
 | Status de automação | Qtd | IDs |
 |---|---:|---|
-| Automatizado | 9 | CT-002, CT-003, CT-004, CT-006, CT-011, CT-014, CT-046, CT-052, CT-053 |
+| Automatizado | 12 | CT-002, CT-003, CT-004, CT-006, CT-011, CT-014, CT-046, CT-052, CT-053, CT-084, CT-085, CT-086 |
 | Bloqueado (`test.fixme`) | 1 | CT-016 |
 | Apenas mapeado | 15 | CT-050–051, CT-054–055, CT-060–061, CT-064, CT-070, CT-072–073, CT-075, CT-077, CT-080–082 |
-| **Total negativos** | **25** | |
+| **Total negativos** | **28** | |
 
 Etapa 16 automatizou CT-052 e CT-053. Leitura antiga “7+1+17” deixa de valer.
 
@@ -39,7 +39,10 @@ Nenhum negativo está em Parcialmente automatizado ou Não aplicável.
 | CT-014 | Recuperação usuário vazio | `login-recuperacao.spec.ts` | MOCKED_PASSED |
 | CT-046 | Registrar sem veículo | `validarCamposObrigatorios` × 18 UFs | MOCKED_PASSED |
 | CT-052 | Tab no datepicker não registra | `contrato-negativos.spec.ts` | MOCKED_PASSED (BA). Não afirma copy de data inválida. |
-| CT-053 | POST registrar 500 | `api-negativos.spec.ts` | MOCKED_PASSED (BA). Sem copy de 5xx inventada. |
+| CT-053 | POST registrar 400/500/503 | `api-negativos.spec.ts` + `contrato-excecoes.spec.ts` | MOCKED_PASSED (BA). Sem copy de erro inventada. |
+| CT-084 | Gravame maxlength 8 | `contrato-negativo.spec.ts` | MOCKED_PASSED (BA). Confluence CT004. |
+| CT-085 | Parcelas sem negativo | `contrato-negativo.spec.ts` | MOCKED_PASSED (BA). Confluence CT008. |
+| CT-086 | Financiamento sem negativo | `contrato-negativo.spec.ts` | MOCKED_PASSED (BA). Confluence CT011. |
 
 ## Bloqueado (fixme — não somar com a tabela acima)
 

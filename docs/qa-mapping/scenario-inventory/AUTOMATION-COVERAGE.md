@@ -1,17 +1,17 @@
 # Cobertura de automação
 
-Status de automação é **mutuamente exclusivo** e totaliza 83. Polaridade (positivo/negativo) e tipo (estrutural/funcional) são eixos à parte.
+Status de automação é **mutuamente exclusivo** e totaliza 86. Polaridade (positivo/negativo) e tipo (estrutural/funcional) são eixos à parte.
 
-## Por status de automação (83 lógicos)
+## Por status de automação (86 lógicos)
 
 | Status | Qtd | IDs / recorte |
 |---|---:|---|
-| Automatizado | 42 | Spec Playwright exerce a intenção (inclui CT-052 e CT-053, etapa 16) |
+| Automatizado | 45 | Spec Playwright exerce a intenção (inclui CT-052/053 etapa 16 e CT-084–086 etapa 18) |
 | Parcialmente automatizado | 4 | CT-036, CT-038, CT-048, CT-049 |
 | Apenas mapeado | 30 | CT-012; CT-050–051; CT-054–057; CT-060–061; CT-063–083 |
 | Bloqueado | 4 | CT-010, CT-016, CT-023, CT-058 |
 | Não aplicável | 3 | CT-040, CT-059, CT-062 |
-| **Total** | **83** | 42 + 4 + 30 + 4 + 3 |
+| **Total** | **86** | 45 + 4 + 30 + 4 + 3 |
 
 Leitura anterior **40 + 4 + 32 = 76** omitiu Bloqueado e Não aplicável. Etapa 16 moveu CT-052 e CT-053 de mapeado para automatizado. Os sete (4+3) não são “pendentes”.
 
@@ -54,7 +54,7 @@ Contagem **primária** no CSV (`tipo`, primeiro token) não substitui o status d
 
 | Ambiente | Lógicos com implementação | Execução comprovada |
 |---|---|---|
-| Mocked | 46 (42 + 4 parciais no job mocked) | Local etapa 16: 102 passed / 3 skipped; CI do PR confirma |
+| Mocked | 49 (45 + 4 parciais no job mocked) | Local etapa 18: a preencher em `docs/qa-mapping/etapa-18/REGRESSION-RESULTS.md` |
 | Live-readonly | 21 specs estruturais + gates 0–3 | 19 UFs históricas; **0** no SHA `60afe11` |
 | Não definido | mapeados PAGE-03..08 | `NOT_VERIFIED` |
 

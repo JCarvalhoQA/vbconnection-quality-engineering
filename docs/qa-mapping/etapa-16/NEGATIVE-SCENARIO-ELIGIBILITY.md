@@ -40,7 +40,7 @@ Nenhum dos 17 foi promovido por default. Hipótese da matriz antiga **não** vir
 
 | ID | Classe | O que o teste afirma | O que o teste **não** afirma |
 |---|---|---|---|
-| CT-052 | FRONTEND_VALIDATION | Tab no `nz-date-picker#dataContrato` não commita o valor; permanece em `/contrato/inserir`; sem POST `contratos/registrar` | Mensagem de “data inválida”; rejeição de `99/99/9999` |
+| CT-052 | FRONTEND_VALIDATION | Tab no `nz-date-picker#dataContrato` **não** dispara POST `contratos/registrar` nem toast de sucesso; permanece em `/contrato/inserir` | Mensagem de “data inválida”; rejeição de `99/99/9999`. A nota etapa-2 “fill+Tab esvazia o FormControl” **não** se reproduziu em 2026-11-10 (valor permanece). |
 | CT-053 | MOCKED_API_REJECTION | POST mock 500; ausente `Contrato registrado com sucesso.`; URL inserir; formulário preserva número do contrato | Homologação DETRAN; copy específica de 500 (não documentada) |
 
 UF dos novos testes: **BA** (recorte POM estável; `DATA_CONTRATO` visível). Não generalizar para 18 UFs — o lógico é um por CT.

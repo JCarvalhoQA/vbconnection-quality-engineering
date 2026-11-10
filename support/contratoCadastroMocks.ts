@@ -128,6 +128,15 @@ export type FormMockSource = 'java-or-ui' | 'ui';
 
 export interface ContratoCadastroMockOptions {
   readonly formSource?: FormMockSource;
+  /** HTTP status de `POST contratos/registrar`. Default 200. ≥400 devolve corpo vazio — não inventa copy de erro. */
+  readonly registrarStatus?: number;
+}
+
+export function corpoMockRegistrar(protocolo: string, httpStatus = 200): unknown {
+  if (httpStatus >= 400) {
+    return {};
+  }
+  return { protocolo, status: 'RECEBIDO' };
 }
 
 /**
@@ -177,6 +186,7 @@ export async function mockContratoCadastroApisOnly(
   const matriz = formPayloadForUf(uf, options.formSource ?? 'java-or-ui');
   const protocolo = protocoloRegistro(uf);
   const destinos = destinosComboMock();
+  const registrarStatus = options.registrarStatus ?? 200;
 
   await page.route((url) => isApiRequest(url.toString()), async (route) => {
     const requestUrl = route.request().url();
@@ -188,7 +198,7 @@ export async function mockContratoCadastroApisOnly(
     }
 
     if (method === 'POST' && requestUrl.includes('contratos/registrar')) {
-      await fulfillJson(route, { protocolo, status: 'RECEBIDO' });
+      await fulfillJson(route, corpoMockRegistrar(protocolo, registrarStatus), registrarStatus);
       return;
     }
 

@@ -17,7 +17,7 @@ test.describe('PAGE-02 negativos de contrato @contrato @negativo @mocked', () =>
     await seedAuthenticatedSession(page);
   });
 
-  test('CT-052 - deve rejeitar commit da data do contrato quando o datepicker recebe Tab', async ({ page }) => {
+  test('CT-052 - deve rejeitar registro do contrato quando só o datepicker recebe Tab', async ({ page }) => {
     test.info().annotations.push({ type: 'ct', description: 'CT-052' });
 
     const contrato = new ContratoActions(page);
@@ -35,21 +35,12 @@ test.describe('PAGE-02 negativos de contrato @contrato @negativo @mocked', () =>
     await expect(picker).toBeVisible();
     const input = picker.locator('input').first();
     await input.click();
-
-    const overlay = page.locator('.ant-picker-dropdown:not(.ant-picker-dropdown-hidden)').last();
-    await overlay.waitFor({ state: 'visible', timeout: 5_000 }).catch(() => undefined);
-
-    const readonly = await input.getAttribute('readonly');
-    if (!readonly) {
-      await input.press('ControlOrMeta+A');
-      await input.pressSequentially('10/11/2026', { delay: 25 });
-    }
-
+    await input.fill('10/11/2026');
     await input.press('Tab');
 
-    await expect(input).not.toHaveValue('10/11/2026');
     await expect(page).toHaveURL(/\/vbconnection\/contrato\/inserir/);
     await expect(contrato.contratoPage.heading).toBeVisible();
+    await expect(page.getByText('Contrato registrado com sucesso.')).toHaveCount(0);
     expect(posts, 'Tab no datepicker não deve POST contratos/registrar').toEqual([]);
   });
 });

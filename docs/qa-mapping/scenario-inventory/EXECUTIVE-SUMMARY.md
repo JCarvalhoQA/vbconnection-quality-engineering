@@ -1,6 +1,6 @@
 # Inventário de cenários — resumo executivo
 
-**SHA da `main`:** `60afe1163606a4cb42d18d6bfbf0e1720585ba82` (2026-11-10)
+**SHA da `main`:** `7edfed2ee2f3d297075e3c0a0fd2afad86f0ba79` (2026-11-10, merge PR #16)
 **Método:** cenário lógico canônico ≠ instância por UF ≠ `test()` ≠ execução. Assertions isoladas não entram na conta.
 
 Os **83** IDs `CT-001`–`CT-083` são cenários lógicos canônicos. Não são instâncias de execução (21 UFs × casca) nem assertions individuais (`*` por campo, `expectNovoUsado`, etc.).
@@ -40,14 +40,14 @@ No CSV, Consulta / Clientes / Telas padrão aparecem como `PAGE-CONSULTA`, `PAGE
 
 | Status | Qtd | Comentário |
 |---|---:|---|
-| Automatizado | 40 | Existe `test()` / helper que exerce a intenção |
+| Automatizado | 42 | Inclui CT-052 e CT-053 (etapa 16, mocked) |
 | Parcialmente automatizado | 4 | CT-036 Documentos; CT-038 tipoEspecie; CT-048 PR; CT-049 PB |
-| Apenas mapeado | 32 | Docs/Gherkin/código v2, sem spec NX da intenção |
+| Apenas mapeado | 30 | Docs/Gherkin/código v2, sem spec NX da intenção |
 | Bloqueado | 4 | CT-010, CT-016, CT-023, CT-058 |
 | Não aplicável | 3 | CT-040, CT-059, CT-062 |
-| **Total** | **83** | 40 + 4 + 32 + 4 + 3 |
+| **Total** | **83** | 42 + 4 + 30 + 4 + 3 |
 
-O levantamento anterior somou só as três primeiras faixas (**40 + 4 + 32 = 76**). Os **sete** restantes já estavam classificados: **não** são “pendentes”.
+Etapa 16: 2 dos 17 negativos mapeados viraram Automatizado. Os **sete** (Bloqueado + Não aplicável) permanecem.
 
 Status de automação **não** se mistura com polaridade (positivo/negativo) nem com tipo (estrutural/funcional). Implementação ≠ execução: gates live CT-041–CT-044 são Automatizado no código e `NOT_VERIFIED` no SHA atual.
 
@@ -60,7 +60,7 @@ Status de automação **não** se mistura com polaridade (positivo/negativo) nem
 | Sem polaridade (`—`) | 3 (CT-040, CT-059, CT-062) |
 | **Total** | **83** |
 
-Negativos em status exclusivo: 7 Automatizado + 1 Bloqueado (`test.fixme` CT-016) + 17 Apenas mapeado = 25. A leitura “8 com alguma automação + 1 fixme + 17 mapeados” **sobreõe** CT-016 e não deve ser somada (ver `NEGATIVE-SCENARIOS.md`).
+Negativos em status exclusivo: 9 Automatizado + 1 Bloqueado (`test.fixme` CT-016) + 15 Apenas mapeado = 25.
 
 ## 5. Cobertura por UF
 
@@ -78,7 +78,7 @@ Não generalizar TG, novo/usado ou tipoEspecie para as 21 UFs.
 
 Último CI mocked comprovado: [42635151327](https://github.com/JCarvalhoQA/vbconnection-quality-engineering/actions/runs/42635151327) (`ae18d2c`, ancestral de `60afe11`, success).
 
-Cobre os 40 automatizados e os 4 parciais no job `--grep-invert @live-readonly`. Aprovação mocked **não** é homologação DETRAN/B3.
+Cobre os 42 automatizados e os 4 parciais no job `--grep-invert @live-readonly` (local etapa 16: 102 passed / 3 skipped). Aprovação mocked **não** é homologação DETRAN/B3.
 
 ## 7. Evidências live
 

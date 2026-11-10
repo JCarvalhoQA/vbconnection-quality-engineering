@@ -31,7 +31,7 @@ Não cria cenário novo. Alias `SCN-*` aponta para a matriz antiga; IDs `CT-*` s
 | PAGE-08 Imagem por tela | CT-078–CT-083 | 6 |
 | **Total** | | **83** |
 
-Status de automação exclusivo (CSV): Automatizado 40 · Parcialmente 4 · Apenas mapeado 32 · Bloqueado 4 · Não aplicável 3 = **83**. Os sete que faltavam em 40+4+32 estão em Bloqueado (CT-010, CT-016, CT-023, CT-058) e Não aplicável (CT-040, CT-059, CT-062). Detalhe: `EXECUTIVE-SUMMARY.md`.
+Status de automação exclusivo (CSV): Automatizado 42 · Parcialmente 4 · Apenas mapeado 30 · Bloqueado 4 · Não aplicável 3 = **83**. Etapa 16: CT-052 e CT-053 saíram de mapeado para automatizado mocked. Os sete (Bloqueado 4 + Não aplicável 3) permanecem. Detalhe: `EXECUTIVE-SUMMARY.md`.
 
 Tabela completa (Excel/Jira): `SCENARIO-INVENTORY.csv` (UTF-8 BOM, 83 linhas de dados, 16 colunas).
 
@@ -46,6 +46,8 @@ Tabela completa (Excel/Jira): `SCENARIO-INVENTORY.csv` (UTF-8 BOM, 83 linhas de 
 | CT-046 | PAGE-02 | Submit sem veículo | 18 UFs | Funcional negativo | Automatizado | Mocked | `validarCamposObrigatorios` |
 | CT-047 | PAGE-02 | Registro feliz mock | 18 UFs | Funcional positivo | Automatizado | Mocked | `registro-contrato.flow.ts` |
 | CT-050 | PAGE-02 | Chassi ≠ 17 | — | Funcional negativo | Apenas mapeado | — | `RULE_NOT_CONFIRMED` |
+| CT-052 | PAGE-02 | Tab no datepicker não registra | BA | Funcional negativo | Automatizado | Mocked | `contrato-negativos.spec.ts` |
+| CT-053 | PAGE-02 | POST registrar 500 | BA | Integração mocked | Automatizado | Mocked | `api-negativos.spec.ts` |
 | CT-057 | PAGE-02 | Envio B3 | — | Integração | Apenas mapeado | — | sem `DadosForm` |
 | CT-063 | PAGE-03 | Busca protocolo existente | — | Funcional | Apenas mapeado | — | `aditivo-inserir.md` |
 | CT-068 | PAGE-04 | Destino RS disabled | RS | Estrutural | Apenas mapeado | — | v2 `AditivoFormRsComponent` |

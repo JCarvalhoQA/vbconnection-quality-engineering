@@ -374,6 +374,25 @@ export class ContratoPage extends FormPage {
     await expect(this.page.getByText('Contrato registrado com sucesso.')).toBeVisible();
   }
 
+  /**
+   * CT-053: rejeição mockada. Não afirma copy de 5xx (não documentada).
+   * Confirma ausência do sucesso já conhecido e que a PAGE-02 permanece.
+   */
+  async esperarRegistroSemSucesso(httpStatus: number): Promise<void> {
+    const [response] = await Promise.all([
+      this.page.waitForResponse(
+        (res) => res.url().includes('contratos/registrar') && res.request().method() === 'POST',
+        { timeout: 15_000 },
+      ),
+      this.enviarContrato(),
+    ]);
+
+    expect(response.status()).toBe(httpStatus);
+    await expect(this.page.getByText('Contrato registrado com sucesso.')).toHaveCount(0);
+    await expect(this.page).toHaveURL(/\/vbconnection\/contrato\/inserir/);
+    await expect(this.heading).toBeVisible();
+  }
+
   marcaObrigatorio(label: string | RegExp, secao?: string | RegExp): Locator {
     const texto = typeof label === 'string' ? rotuloExato(label) : label;
     const noEscopo = (raiz: Page | Locator) => raiz.locator('label').filter({ hasText: texto }).getByText('*');
